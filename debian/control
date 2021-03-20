@@ -1,0 +1,24 @@
+Source: cutefish-qtplugins
+Section: devel
+Priority: optional
+Maintainer: CutefishOS <cutefishos@foxmail.com>
+Build-Depends: cmake,
+               debhelper (>= 9),
+               extra-cmake-modules,
+               libqt5x11extras5-dev,
+               libqt5xdg-dev,
+               libdbusmenu-qt5-dev,
+               libxcb1-dev,
+               qtbase5-dev,
+               qtdeclarative5-dev,
+               qtquickcontrols2-5-dev,
+               qttools5-dev,
+               qttools5-dev-tools
+Standards-Version: 4.5.0
+Homepage: https://github.com/cutefishos/qt-plugins
+
+Package: cutefish-qtplugins
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Description: CutefishOS Qt Plugins
