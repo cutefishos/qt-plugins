@@ -198,5 +198,5 @@ void PlatformTheme::setQtQuickControlsTheme()
         return;
     }
 
-    QQuickStyle::setStyle(QLatin1String("meui-style"));
+    QQuickStyle::setStyle(QLatin1String("fish-style"));
 }
