@@ -379,7 +379,7 @@ QMargins ShadowHelper::shadowMargins(QWidget *widget, TileSet shadowTiles) const
     QRect boxRect(QPoint(0, 0), boxSize);
     boxRect.moveCenter(shadowRect.center());
 
-    int Shadow_Overlap = 3;
+    int Shadow_Overlap = 4;
     QMargins margins(
         boxRect.left() - shadowRect.left() - Shadow_Overlap - params.offset.x(),
         boxRect.top() - shadowRect.top() - Shadow_Overlap - params.offset.y(),
