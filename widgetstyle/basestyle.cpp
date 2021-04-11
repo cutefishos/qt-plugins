@@ -115,7 +115,7 @@ namespace Phantom
         constexpr qint16 HeaderSortIndicator_VOffset = 2;
         constexpr qint16 TabBar_InctiveVShift = 0;
 
-        constexpr qreal DefaultFrame_Radius = 5.0;
+        constexpr qreal DefaultFrame_Radius = 12.0;
         constexpr qreal TabBarTab_Rounding = 1.0;
         constexpr qreal SpinBox_Rounding = 5.0;
         constexpr qreal LineEdit_Rounding = 5.0;
@@ -2159,7 +2159,6 @@ void BaseStyle::drawPrimitive(PrimitiveElement elem,
         // QRect bgRect = option->rect.adjusted(1, isBelowMenuBar ? 0 : 1, -1, -1);
         // painter->fillRect(bgRect, swatch.color(S_window));
 
-        const int radius = Phantom::DefaultFrame_Radius;
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
         painter->setPen(swatch.color(S_frame_outline));
@@ -2167,12 +2166,12 @@ void BaseStyle::drawPrimitive(PrimitiveElement elem,
         background.setAlpha(150);
         painter->setBrush(background);
         QRectF frameRect = strokedRect(option->rect, 1);
-        painter->drawRoundedRect(frameRect, radius, radius);
+        painter->drawRoundedRect(frameRect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
 
         // blur
         if (widget && widget->window()) {
             QPainterPath path;
-            path.addRoundedRect(option->rect, radius, radius);
+            path.addRoundedRect(option->rect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
             const_cast<QWidget *>(widget)->setMask(path.toFillPolygon().toPolygon());
             m_blurHelper->update(const_cast<QWidget *>(widget));
         }
@@ -2730,11 +2729,12 @@ void BaseStyle::drawControl(ControlElement element,
             Swatchy fillColor = isSunken ? S_highlight_outline : S_highlight;
             // painter->fillRect(option->rect, swatch.color(fillColor));
             // rekols: Add rounded rectangle.
+            qreal item_radius = Phantom::DefaultFrame_Radius / 2;
             painter->save();
             painter->setPen(Qt::NoPen);
             painter->setBrush(swatch.color(fillColor));
             painter->setRenderHint(QPainter::Antialiasing);
-            painter->drawRoundedRect(option->rect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
+            painter->drawRoundedRect(option->rect, item_radius, item_radius);
             painter->restore();
         }
 
@@ -2812,19 +2812,6 @@ void BaseStyle::drawControl(ControlElement element,
 #endif
             painter->setPen(swatch.pen(isSelected ? S_highlightedText : S_text));
 
-            // Comment from original Qt code which did some dance with the font:
-            //
-            // font may not have any "hard" flags set. We override the point size so
-            // that when it is resolved against the device, this font will win. This
-            // is mainly to handle cases where someone sets the font on the window
-            // and then the combo inherits it and passes it onward. At that point the
-            // resolve mask is very, very weak. This makes it stonger.
-#if 0
-                QFont font = menuItem->font;
-      font.setPointSizeF(QFontInfo(menuItem->font).pointSizeF());
-      painter->setFont(font);
-#endif
-
             // My comment:
             //
             // What actually looks like is happening is that the qplatformtheme may
@@ -2882,10 +2869,6 @@ void BaseStyle::drawControl(ControlElement element,
             const QStringRef textToDrawRef = s.left(t);
             const QString unsafeTextToDraw = QString::fromRawData(textToDrawRef.constData(), textToDrawRef.size());
             painter->drawText(textRect, text_flags, unsafeTextToDraw);
-
-#if 0
-                painter->restore();
-#endif
         }
 
         // SubMenu Arrow
@@ -4044,16 +4027,16 @@ int BaseStyle::pixelMetric(PixelMetric metric, const QStyleOption* option, const
         val = 1;
         break;
     case PM_MenuVMargin:
-        val = Phantom::DefaultFrame_Radius;
+        val = Phantom::DefaultFrame_Radius / 2;
         break;
     case PM_MenuHMargin:
-        val = Phantom::DefaultFrame_Radius;
+        val = Phantom::DefaultFrame_Radius / 2;
         break;
     case PM_MenuPanelWidth:
         val = 0;
         break;
     case PM_MenuBarItemSpacing:
-        val = Phantom::MenuBar_ItemSpacing;
+        val = Phantom::MenuBar_ItemSpacing / 2;
         break;
     case PM_MenuBarHMargin:
         // option is usually nullptr, use widget instead to get font metrics

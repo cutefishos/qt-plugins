@@ -34,9 +34,9 @@
 
 #include <KWindowSystem>
 
-const char netWMSkipShadow[] = "_CYBER_NET_WM_SKIP_SHADOW";
-const char netWMForceShadow[] = "_CYBER_NET_WM_FORCE_SHADOW";
-const char netWMFrameRadius[] = "_CYBER_NET_WM_FRAME_RADIUS";
+const char netWMSkipShadow[] = "_CUTEFISH_NET_WM_SKIP_SHADOW";
+const char netWMForceShadow[] = "_CUTEFISH_NET_WM_FORCE_SHADOW";
+const char netWMFrameRadius[] = "_CUTEFISH_NET_WM_FRAME_RADIUS";
 
 enum {
     ShadowNone,
@@ -74,7 +74,7 @@ const CompositeShadowParams s_shadowParams[] = {
 
 ShadowHelper::ShadowHelper(QObject * parent)
     : QObject(parent),
-      m_frameRadius(5)
+      m_frameRadius(12)
 {
 }
 
@@ -161,7 +161,7 @@ bool ShadowHelper::eventFilter(QObject *object, QEvent *event)
         if (event->type() != QEvent::PlatformSurface)
             return false;
 
-        QWidget *widget(static_cast<QWidget *>(object));
+        // QWidget *widget(static_cast<QWidget *>(object));
         QPlatformSurfaceEvent* surfaceEvent(static_cast<QPlatformSurfaceEvent*>(event));
 
         switch (surfaceEvent->surfaceEventType()) {
