@@ -4289,7 +4289,8 @@ QSize BaseStyle::sizeFromContents(ContentsType type,
     }
     case CT_Slider: {
         QSize sz = size;
-        if (qobject_cast<const QSlider*>(widget)->orientation() == Qt::Horizontal) {
+        // mitigate zero-pointer dereference
+        if (!widget || qobject_cast<const QSlider*>(widget)->orientation() == Qt::Horizontal) {
             sz.setHeight(sz.height() + PM_SliderTickmarkOffset);
         } else {
             sz.setWidth(sz.width() + PM_SliderTickmarkOffset);
