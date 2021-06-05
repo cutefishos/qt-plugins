@@ -2161,7 +2161,7 @@ void BaseStyle::drawPrimitive(PrimitiveElement elem,
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
-        painter->setPen(swatch.color(S_frame_outline));
+        painter->setPen(Qt::NoPen);
         QColor background(swatch.color(S_window));
         background.setAlpha(150);
         painter->setBrush(background);
@@ -2726,13 +2726,15 @@ void BaseStyle::drawControl(ControlElement element,
         bool isEnabled = menuItem->state & State_Enabled;
         bool hasSubMenu = menuItem->menuItemType == QStyleOptionMenuItem::SubMenu;
         if (isSelected) {
-            Swatchy fillColor = isSunken ? S_highlight_outline : S_highlight;
+            // Swatchy fillColor = isSunken ? S_highlight_outline : S_highlight;
             // painter->fillRect(option->rect, swatch.color(fillColor));
             // rekols: Add rounded rectangle.
             qreal item_radius = Phantom::DefaultFrame_Radius / 2;
             painter->save();
             painter->setPen(Qt::NoPen);
-            painter->setBrush(swatch.color(fillColor));
+            // painter->setBrush(swatch.color(fillColor));
+            painter->setBrush(swatch.color(S_button_on));
+            painter->setOpacity(0.4);
             painter->setRenderHint(QPainter::Antialiasing);
             painter->drawRoundedRect(option->rect, item_radius, item_radius);
             painter->restore();
@@ -2742,14 +2744,14 @@ void BaseStyle::drawControl(ControlElement element,
             // Note: check rect might be misaligned vertically if it's a menu from a
             // combo box. Probably a bug in Qt code?
             QRect checkRect = Ph::menuItemCheckRect(metrics, option->direction, itemRect, hasSubMenu);
-            Swatchy signColor = !isEnabled ? S_windowText : isSelected ? S_highlightedText : S_windowText;
+            Swatchy signColor = !isEnabled ? S_windowText : isSelected ? S_windowText /*S_highlightedText*/ : S_windowText;
             if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
                 // Radio button
                 if (isChecked) {
                     painter->setRenderHint(QPainter::Antialiasing);
                     painter->setPen(Qt::NoPen);
                     QPalette::ColorRole textRole =
-                        !isEnabled ? QPalette::Text : isSelected ? QPalette::HighlightedText : QPalette::ButtonText;
+                        !isEnabled ? QPalette::Text : isSelected ? /*QPalette::HighlightedText*/ QPalette::ButtonText : QPalette::ButtonText;
                     painter->setBrush(option->palette.brush(option->palette.currentColorGroup(), textRole));
                     qreal rx, ry, rw, rh;
                     QRectF(checkRect).getRect(&rx, &ry, &rw, &rh);
@@ -2810,7 +2812,7 @@ void BaseStyle::drawControl(ControlElement element,
 #if 0
                 painter->save();
 #endif
-            painter->setPen(swatch.pen(isSelected ? S_highlightedText : S_text));
+            painter->setPen(swatch.pen(isSelected ? S_text /*S_highlightedText*/ : S_text));
 
             // My comment:
             //
