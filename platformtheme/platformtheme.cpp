@@ -128,38 +128,38 @@ const QFont* PlatformTheme::font(Font type) const
 
 QPlatformMenuBar *PlatformTheme::createPlatformMenuBar() const
 {
-//     if (isDBusGlobalMenuAvailable()) {
-//         auto *menu = new QDBusMenuBar();
+    if (isDBusGlobalMenuAvailable()) {
+        auto *menu = new QDBusMenuBar();
 
-//         QObject::connect(menu, &QDBusMenuBar::windowChanged, menu, [this, menu](QWindow *newWindow, QWindow *oldWindow) {
-//             const QString &serviceName = QDBusConnection::sessionBus().baseService();
-//             const QString &objectPath = menu->objectPath();
+        QObject::connect(menu, &QDBusMenuBar::windowChanged, menu, [this, menu](QWindow *newWindow, QWindow *oldWindow) {
+            const QString &serviceName = QDBusConnection::sessionBus().baseService();
+            const QString &objectPath = menu->objectPath();
 
-//             if (m_x11Integration) {
+            if (m_x11Integration) {
+                if (oldWindow) {
+                    m_x11Integration->setWindowProperty(oldWindow, s_x11AppMenuServiceNamePropertyName, {});
+                    m_x11Integration->setWindowProperty(oldWindow, s_x11AppMenuObjectPathPropertyName, {});
+                }
+
+                if (newWindow) {
+                    m_x11Integration->setWindowProperty(newWindow, s_x11AppMenuServiceNamePropertyName, serviceName.toUtf8());
+                    m_x11Integration->setWindowProperty(newWindow, s_x11AppMenuObjectPathPropertyName, objectPath.toUtf8());
+                }
+            }
+
+//             if (m_kwaylandIntegration) {
 //                 if (oldWindow) {
-//                     m_x11Integration->setWindowProperty(oldWindow, s_x11AppMenuServiceNamePropertyName, {});
-//                     m_x11Integration->setWindowProperty(oldWindow, s_x11AppMenuObjectPathPropertyName, {});
+//                     m_kwaylandIntegration->setAppMenu(oldWindow, QString(), QString());
 //                 }
-
+//
 //                 if (newWindow) {
-//                     m_x11Integration->setWindowProperty(newWindow, s_x11AppMenuServiceNamePropertyName, serviceName.toUtf8());
-//                     m_x11Integration->setWindowProperty(newWindow, s_x11AppMenuObjectPathPropertyName, objectPath.toUtf8());
+//                     m_kwaylandIntegration->setAppMenu(newWindow, serviceName, objectPath);
 //                 }
 //             }
+        });
 
-// //             if (m_kwaylandIntegration) {
-// //                 if (oldWindow) {
-// //                     m_kwaylandIntegration->setAppMenu(oldWindow, QString(), QString());
-// //                 }
-// //
-// //                 if (newWindow) {
-// //                     m_kwaylandIntegration->setAppMenu(newWindow, serviceName, objectPath);
-// //                 }
-// //             }
-//         });
-
-//         return menu;
-//     }
+        return menu;
+    }
 
     return nullptr;
 }
