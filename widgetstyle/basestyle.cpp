@@ -2163,7 +2163,7 @@ void BaseStyle::drawPrimitive(PrimitiveElement elem,
         painter->setRenderHint(QPainter::Antialiasing);
         painter->setPen(Qt::NoPen);
         QColor background(swatch.color(S_window));
-        background.setAlpha(150);
+        background.setAlpha(200);
         painter->setBrush(background);
         QRectF frameRect = strokedRect(option->rect, 1);
         painter->drawRoundedRect(frameRect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
