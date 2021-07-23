@@ -3183,8 +3183,8 @@ QPalette BaseStyle::lightModePalette()
 QPalette BaseStyle::darkModePalette()
 {
     QPalette palette;
-    palette.setColor(QPalette::Active, QPalette::Window, QRgb(0x3B3B3D));
-    palette.setColor(QPalette::Inactive, QPalette::Window, QRgb(0x404042));
+    palette.setColor(QPalette::Active, QPalette::Window, QRgb(0x2C2C2D));
+    palette.setColor(QPalette::Inactive, QPalette::Window, QRgb(0x2C2C2D));
     palette.setColor(QPalette::Disabled, QPalette::Window, QRgb(0x424242));
 
     palette.setColor(QPalette::Active, QPalette::WindowText, QRgb(0xCACBCE));
