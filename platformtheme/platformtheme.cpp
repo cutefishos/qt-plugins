@@ -198,5 +198,9 @@ void PlatformTheme::setQtQuickControlsTheme()
         return;
     }
 
+    if (qApp->applicationName() == "systemsettings") {
+        return;
+    }
+
     QQuickStyle::setStyle(QLatin1String("fish-style"));
 }
