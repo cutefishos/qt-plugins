@@ -9,7 +9,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-set(QT Core Gui Widgets DBus)
+set(QT Core Gui Widgets DBus X11Extras)
 find_package(Qt5 REQUIRED ${QT})
 find_package(PkgConfig REQUIRED)
 find_package(KF5 REQUIRED WindowSystem)
@@ -40,6 +40,7 @@ target_link_libraries(${TARGET}
     Qt5::Gui
     Qt5::Widgets
     Qt5::DBus
+    Qt5::X11Extras
     KF5::WindowSystem
     )
 

@@ -115,7 +115,7 @@ namespace Phantom
         constexpr qint16 HeaderSortIndicator_VOffset = 2;
         constexpr qint16 TabBar_InctiveVShift = 0;
 
-        constexpr qreal DefaultFrame_Radius = 12.0;
+        constexpr qreal DefaultFrame_Radius = 11.0;
         constexpr qreal TabBarTab_Rounding = 1.0;
         constexpr qreal SpinBox_Rounding = 5.0;
         constexpr qreal LineEdit_Rounding = 5.0;

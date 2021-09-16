@@ -3,6 +3,7 @@
 // handle regions passed to kwin for blurring
 // -------------------
 //
+// Copyright (C) 2021 Reion Wong <reionwong@gmail.com>
 // Copyright (C) 2018 Alex Nemeth <alex.nemeth329@gmail.com>
 //
 // Largely rewritten from Oxygen widget style
@@ -38,6 +39,12 @@
 #include <QVariant>
 #include <QEvent>
 #include <QPainterPath>
+#include <QX11Info>
+
+// XCB
+#include <xcb/xcb.h>
+#include <xcb/shape.h>
+#include <xcb/xcb_icccm.h>
 
 BlurHelper::BlurHelper(QObject *parent)
     : QObject(parent)
