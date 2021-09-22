@@ -46,6 +46,8 @@ public:
 
     void update(QWidget *) const;
 
+    void enableBlurBehind(QWidget *widget, bool enable = true, qreal windowRadius = 0.0);
+
 protected:
     void addEventFilter(QObject *object) {
         object->removeEventFilter(this);

@@ -2170,10 +2170,12 @@ void BaseStyle::drawPrimitive(PrimitiveElement elem,
 
         // blur
         if (widget && widget->window()) {
-            QPainterPath path;
-            path.addRoundedRect(option->rect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
-            const_cast<QWidget *>(widget)->setMask(path.toFillPolygon().toPolygon());
-            m_blurHelper->update(const_cast<QWidget *>(widget));
+//            QPainterPath path;
+//            path.addRoundedRect(option->rect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
+//            const_cast<QWidget *>(widget)->setMask(path.toFillPolygon().toPolygon());
+//            m_blurHelper->update(const_cast<QWidget *>(widget));
+
+            m_blurHelper->enableBlurBehind(const_cast<QWidget *>(widget), true, Phantom::DefaultFrame_Radius);
         }
 
         painter->restore();
@@ -4481,7 +4483,7 @@ void BaseStyle::polish(QWidget *widget)
 
     if (qobject_cast<QMenu *>(widget)) {
         widget->setAttribute(Qt::WA_TranslucentBackground, true);
-        m_blurHelper->registerWidget(widget);
+        // m_blurHelper->registerWidget(widget);
     }
 
     if (widget->inherits("QTipLabel") || widget->inherits("QComboBoxPrivateContainer")) {
@@ -4510,7 +4512,7 @@ void BaseStyle::unpolish(QWidget *widget)
 
     if (qobject_cast<QMenu *>(widget)) {
         widget->setAttribute(Qt::WA_TranslucentBackground, false);
-        m_blurHelper->unregisterWidget(widget);
+        // m_blurHelper->unregisterWidget(widget);
     }
 
     if (widget->inherits("QTipLabel")) {

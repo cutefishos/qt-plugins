@@ -1,4 +1,4 @@
-Source: cutefish-qtplugins
+Source: cutefish-qt-plugins
 Section: devel
 Priority: optional
 Maintainer: CutefishOS <support@cutefishos.com>
@@ -20,7 +20,7 @@ Build-Depends: cmake,
 Standards-Version: 4.5.0
 Homepage: https://cutefishos.com
 
-Package: cutefish-qtplugins
+Package: cutefish-qt-plugins
 Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends}
