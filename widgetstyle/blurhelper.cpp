@@ -41,6 +41,7 @@
 #include <QVariant>
 #include <QEvent>
 #include <QPainterPath>
+#include <QApplication>
 #include <QX11Info>
 
 // XCB
@@ -129,7 +130,7 @@ void BlurHelper::enableBlurBehind(QWidget *widget, bool enable, qreal windowRadi
         return;
 
     if (enable) {
-        qreal devicePixelRatio = widget->screen()->devicePixelRatio();
+        qreal devicePixelRatio = qApp->devicePixelRatio();
         QPainterPath path;
         path.addRoundedRect(QRectF(QPoint(0, 0), widget->size() * devicePixelRatio),
                             windowRadius * devicePixelRatio,
