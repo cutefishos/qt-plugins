@@ -45,7 +45,8 @@ extern void updateXdgIconSystemTheme();
 void onDarkModeChanged()
 {
     if (qApp->applicationName() == "systemsettings"
-                || qApp->applicationName().contains("plasma")) {
+                || qApp->applicationName().contains("plasma")
+                || qApp->applicationName().contains("QtCreator")) {
         return;
     }
 

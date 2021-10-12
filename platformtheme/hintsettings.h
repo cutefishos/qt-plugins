@@ -52,6 +52,7 @@ private:
     QString m_systemFont;
     QString m_systemFixedFont;
     qreal m_systemFontPointSize;
+    QString m_iconTheme;
 };
 
 #endif //HINTSSETTINGS_H

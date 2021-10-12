@@ -31,7 +31,14 @@ HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent),
       m_settings(new QSettings(QSettings::UserScope, "cutefishos", "theme"))
 {
-    m_hints[QPlatformTheme::SystemIconThemeName] = darkMode() ? s_darkIconName : s_lightIconName;
+    m_iconTheme = m_settings->value("IconTheme", "Crule").toString();
+
+    if (m_iconTheme.contains("Crule"))
+        m_hints[QPlatformTheme::SystemIconThemeName] = darkMode() ? s_darkIconName : s_lightIconName;
+    else
+        m_hints[QPlatformTheme::SystemIconThemeName] = m_iconTheme;
+
+    m_hints[QPlatformTheme::SystemIconFallbackThemeName] = s_lightIconName;
     m_hints[QPlatformTheme::StyleNames] = "cutefish";
     m_hints[QPlatformTheme::SystemIconFallbackThemeName] = QStringLiteral("hicolor");
     m_hints[QPlatformTheme::IconThemeSearchPaths] = xdgIconThemePaths();
@@ -114,7 +121,17 @@ void HintsSettings::onFileChanged(const QString &path)
             else if (value == s_darkModeName) {
                 emit darkModeChanged(newValue.toBool());
                 // Need to update the icon to dark
-                m_hints[QPlatformTheme::SystemIconThemeName] = darkMode() ? s_darkIconName : s_lightIconName;
+
+                if (m_iconTheme.contains("Crule"))
+                    m_hints[QPlatformTheme::SystemIconThemeName] = darkMode() ? s_darkIconName : s_lightIconName;
+
+                emit iconThemeChanged();
+            } else if (value == "IconTheme") {
+                if (!m_iconTheme.contains("Crule")) {
+                    m_iconTheme = newValue.toString();
+                    m_hints[QPlatformTheme::SystemIconThemeName] = m_iconTheme;
+                }
+
                 emit iconThemeChanged();
             }
         }
