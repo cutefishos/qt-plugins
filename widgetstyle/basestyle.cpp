@@ -891,7 +891,7 @@ namespace Phantom
         {
             QRect ra = bar->rect;
             QRect rb = ra;
-            bool isHorizontal = bar->orientation != Qt::Vertical;
+            bool isHorizontal = bar->rect.width() >= bar->rect.height();
             bool isInverted = bar->invertedAppearance;
             bool isIndeterminate = bar->minimum == 0 && bar->maximum == 0;
             bool isForward = !isHorizontal || bar->direction != Qt::RightToLeft;
@@ -2634,7 +2634,7 @@ void BaseStyle::drawControl(ControlElement element,
         QRect r = bar->rect.adjusted(2, 2, -2, -2);
         if (r.isEmpty() || !r.isValid())
             break;
-        QSize textSize = option->fontMetrics.size(Qt::TextBypassShaping, bar->text);
+        QSize textSize = option->fontMetrics.size(Qt::TextSingleLine, bar->text);
         QRect textRect = QStyle::alignedRect(option->direction, Qt::AlignCenter, textSize, option->rect);
         textRect &= r;
         if (textRect.isEmpty())
@@ -2802,10 +2802,10 @@ void BaseStyle::drawControl(ControlElement element,
         }
 
         // Draw main text and mnemonic text
-        QStringRef s(&menuItem->text);
+        QStringView s(menuItem->text);
         if (!s.isEmpty()) {
             QRect textRect =
-                Ph::menuItemTextRect(metrics, option->direction, itemRect, hasSubMenu, hasIcon, menuItem->tabWidth);
+                Ph::menuItemTextRect(metrics, option->direction, itemRect, hasSubMenu, hasIcon, menuItem->reservedShortcutWidth);
             int t = s.indexOf(QLatin1Char('\t'));
             int text_flags =
                 Qt::AlignLeft | Qt::AlignTop | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
@@ -2864,14 +2864,14 @@ void BaseStyle::drawControl(ControlElement element,
             // Draw mnemonic text
             if (t >= 0) {
                 QRect mnemonicR =
-                    Ph::menuItemMnemonicRect(metrics, option->direction, itemRect, hasSubMenu, menuItem->tabWidth);
-                const QStringRef textToDrawRef = s.mid(t + 1);
-                const QString unsafeTextToDraw = QString::fromRawData(textToDrawRef.constData(), textToDrawRef.size());
+                    Ph::menuItemMnemonicRect(metrics, option->direction, itemRect, hasSubMenu, menuItem->reservedShortcutWidth);
+                const QStringView textToDrawView = s.mid(t + 1);
+                const QString unsafeTextToDraw = textToDrawView.toString();
                 painter->drawText(mnemonicR, text_flags, unsafeTextToDraw);
                 s = s.left(t);
             }
-            const QStringRef textToDrawRef = s.left(t);
-            const QString unsafeTextToDraw = QString::fromRawData(textToDrawRef.constData(), textToDrawRef.size());
+            const QStringView textToDrawView = s.left(t);
+            const QString unsafeTextToDraw = textToDrawView.toString();
             painter->drawText(textRect, text_flags, unsafeTextToDraw);
         }
 
@@ -4363,7 +4363,7 @@ QSize BaseStyle::sizeFromContents(ContentsType type,
         bool nullIcon = hdr->icon.isNull();
         int margin = proxy()->pixelMetric(QStyle::PM_HeaderMargin, hdr, widget);
         int iconSize = nullIcon ? 0 : option->fontMetrics.height();
-        QSize txt = hdr->fontMetrics.size(Qt::TextSingleLine | Qt::TextBypassShaping, hdr->text);
+        QSize txt = hdr->fontMetrics.size(Qt::TextSingleLine, hdr->text);
         QSize sz;
         sz.setHeight(margin + qMax(iconSize, txt.height()) + margin);
         sz.setWidth((nullIcon ? 0 : margin) + iconSize + (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);

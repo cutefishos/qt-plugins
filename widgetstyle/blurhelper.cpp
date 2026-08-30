@@ -31,11 +31,12 @@
 
 #include "blurhelper.h"
 
-// KF5
+// KDE Frameworks
 #include <KWindowEffects>
 
 // Qt
 #include <QWidget>
+#include <QWindow>
 #include <QScreen>
 #include <QRect>
 #include <QVariant>
@@ -102,10 +103,14 @@ void BlurHelper::update(QWidget *widget) const
     if (!(widget->testAttribute(Qt::WA_WState_Created) || widget->internalWinId()))
         return;
 
+    QWindow *window = widget->windowHandle();
+    if (!window)
+        return;
+
     if (widget->mask().isEmpty()) {
-        KWindowEffects::enableBlurBehind(widget->winId(), true);
+        KWindowEffects::enableBlurBehind(window, true);
     } else {
-        KWindowEffects::enableBlurBehind(widget->winId(), true, widget->mask());
+        KWindowEffects::enableBlurBehind(window, true, widget->mask());
     }
 
     // force update

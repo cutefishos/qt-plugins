@@ -9,7 +9,6 @@
 #include "dbustypes.h"
 
 class StatusNotifierItemAdaptor;
-class DBusMenuExporter;
 
 class StatusNotifierItem : public QObject
 {
@@ -154,7 +153,7 @@ private:
     // menu
     QMenu *mMenu;
     QDBusObjectPath mMenuPath;
-    DBusMenuExporter *mMenuExporter;
+    QObject *mMenuExporter;
     QDBusConnection mSessionBus;
 
     static int mServiceCounter;

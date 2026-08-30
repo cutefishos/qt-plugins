@@ -20,6 +20,7 @@
 
 // Qt DBus
 #include <QDBusConnection>
+#include <QDBusConnectionInterface>
 #include <QDBusInterface>
 
 #include <KWindowSystem>

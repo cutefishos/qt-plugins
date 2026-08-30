@@ -5,20 +5,17 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5QuickControls2 REQUIRED)
-find_package(Qt5DBus REQUIRED)
-find_package(Qt5X11Extras REQUIRED)
-find_package(Qt5Gui CONFIG REQUIRED Private)
-find_package(Qt5XdgIconLoader REQUIRED)
-find_package(dbusmenu-qt5 REQUIRED)
-find_package(KF5WindowSystem REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets QuickControls2 DBus)
+find_package(Qt6Gui CONFIG REQUIRED Private)
+find_package(KF6WindowSystem REQUIRED)
 find_package(PkgConfig REQUIRED)
-
-# dependencies for QPA plugin
-find_package(Qt5ThemeSupport REQUIRED)
-set(QT5PLATFORMSUPPORT_LIBS Qt5ThemeSupport::Qt5ThemeSupport)
+pkg_check_modules(Qt6XdgIconLoader REQUIRED IMPORTED_TARGET Qt6XdgIconLoader)
+find_path(QT6XDGICONLOADER_PRIVATE_INCLUDE_DIR
+    NAMES private/xdgiconloader/xdgiconloader_p.h
+    PATHS /usr/include/qt6xdgiconloader
+    PATH_SUFFIXES 4.1.0
+    REQUIRED
+)
 
 # qdbusmenubar uses them
 remove_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
@@ -44,9 +41,9 @@ set (SRCS
     statusnotifier/statusnotifieritem.cpp
 )
 
-qt5_add_dbus_interface(SRCS org.kde.StatusNotifierWatcher.xml statusnotifierwatcher_interface)
+qt6_add_dbus_interface(SRCS org.kde.StatusNotifierWatcher.xml statusnotifierwatcher_interface)
 
-qt5_add_dbus_adaptor(SRCS
+qt6_add_dbus_adaptor(SRCS
     statusnotifier/org.kde.StatusNotifierItem.xml
     statusnotifier/statusnotifieritem.h
     StatusNotifierItem
@@ -61,28 +58,25 @@ target_compile_definitions(cutefishplatformtheme
 )
 
 target_link_libraries(cutefishplatformtheme PRIVATE
-    Qt5::GuiPrivate
-    Qt5::X11Extras
-    Qt5::Widgets
-    Qt5::QuickControls2
-    Qt5::Core
-    Qt5::DBus
-    dbusmenu-qt5
+    Qt6::GuiPrivate
+    Qt6::Widgets
+    Qt6::QuickControls2
+    Qt6::Core
+    Qt6::DBus
+    PkgConfig::Qt6XdgIconLoader
 
-    Qt5XdgIconLoader
-
-    KF5::WindowSystem
+    KF6::WindowSystem
     PkgConfig::XCB
-    ${QT5PLATFORMSUPPORT_LIBS}
 )
+target_include_directories(cutefishplatformtheme PRIVATE "${QT6XDGICONLOADER_PRIVATE_INCLUDE_DIR}")
 
-find_program(QT_QMAKE_EXECUTABLE NAMES qmake-qt5 qmake REQUIRED)
-execute_process(COMMAND "${QT_QMAKE_EXECUTABLE}" -query QT_INSTALL_PLUGINS
+find_program(QT_PATHS_EXECUTABLE NAMES qtpaths6 REQUIRED)
+execute_process(COMMAND "${QT_PATHS_EXECUTABLE}" -query QT_INSTALL_PLUGINS
     OUTPUT_VARIABLE QT_PLUGINS_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(QT_PLUGINS_DIR)
-    message(STATUS "Qt5 plugin directory:" "${QT_PLUGINS_DIR}")
+    message(STATUS "Qt6 plugin directory:" "${QT_PLUGINS_DIR}")
 else()
-    message(FATAL_ERROR "Qt5 plugin directory cannot be detected.")
+    message(FATAL_ERROR "Qt6 plugin directory cannot be detected.")
 endif()
 
 install(TARGETS cutefishplatformtheme LIBRARY DESTINATION "${QT_PLUGINS_DIR}/platformthemes")

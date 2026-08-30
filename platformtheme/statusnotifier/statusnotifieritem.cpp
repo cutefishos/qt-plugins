@@ -2,7 +2,6 @@
 #include "statusnotifieritemadaptor.h"
 #include <QDBusInterface>
 #include <QDBusServiceWatcher>
-#include <dbusmenuexporter.h>
 
 int StatusNotifierItem::mServiceCounter = 0;
 
@@ -212,17 +211,15 @@ void StatusNotifierItem::setContextMenu(QMenu* menu)
     }
     mMenu = menu;
 
-    if (nullptr != mMenu)
-        setMenuPath(QLatin1String("/MenuBar"));
-    else
-        setMenuPath(QLatin1String("/NO_DBUSMENU"));
+    setMenuPath(QLatin1String("/NO_DBUSMENU"));
 
-    //Note: we need to destroy menu exporter before creating new one -> to free the DBus object path for new menu
+    // Qt 6 no longer ships the old dbusmenu-qt exporter. Keep the notifier
+    // alive and expose no menu when that optional bridge is unavailable.
     delete mMenuExporter;
+    mMenuExporter = nullptr;
     if (nullptr != mMenu)
     {
         connect(mMenu, &QObject::destroyed, this, &StatusNotifierItem::onMenuDestroyed);
-        mMenuExporter = new DBusMenuExporter{this->menu().path(), mMenu, mSessionBus};
     }
 }
 
