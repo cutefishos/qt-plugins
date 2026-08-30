@@ -34,6 +34,7 @@
 
 // KDE Frameworks
 #include <KWindowEffects>
+#include <KWindowSystem>
 
 // Qt
 #include <QWidget>
@@ -97,6 +98,12 @@ bool BlurHelper::eventFilter(QObject *object, QEvent *event)
 
 void BlurHelper::update(QWidget *widget) const
 {
+    // KWindowEffects is an X11/EWMH integration. On Wayland there is no X11
+    // native interface to pass the blur region to, and calling it can crash
+    // while a QMenu is being painted.
+    if (!KWindowSystem::isPlatformX11())
+        return;
+
     /*
       directly from bespin code. Supposedly prevent playing with some 'pseudo-widgets'
       that have winId matching some other -random- window
@@ -122,10 +129,14 @@ void BlurHelper::update(QWidget *widget) const
 
 void BlurHelper::enableBlurBehind(QWidget *widget, bool enable, qreal windowRadius)
 {
-    if (!widget)
+    if (!widget || !KWindowSystem::isPlatformX11())
         return;
 
-    xcb_connection_t *c = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->connection();
+    const auto native = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+    if (!native)
+        return;
+
+    xcb_connection_t *c = native->connection();
     if (!c)
         return;
 
