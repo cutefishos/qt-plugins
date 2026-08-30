@@ -19,6 +19,7 @@
 #include <QDBusArgument>
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QFontDatabase>
 
 static const QByteArray s_systemFontName = QByteArrayLiteral("Font");
 static const QByteArray s_systemFixedFontName = QByteArrayLiteral("FixedFont");
@@ -26,6 +27,19 @@ static const QByteArray s_systemPointFontSize = QByteArrayLiteral("FontSize");
 static const QByteArray s_darkModeName = QByteArrayLiteral("DarkMode");
 static const QByteArray s_lightIconName = QByteArrayLiteral("Crule");
 static const QByteArray s_darkIconName = QByteArrayLiteral("Crule-dark");
+
+static QString availableFontFamily(const QString &requested, const QString &fallback)
+{
+    QFontDatabase database;
+    const QStringList families = database.families();
+
+    if (families.contains(requested))
+        return requested;
+    if (families.contains(fallback))
+        return fallback;
+
+    return QStringLiteral("Sans Serif");
+}
 
 HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent),
@@ -78,12 +92,14 @@ QStringList HintsSettings::xdgIconThemePaths() const
 
 QString HintsSettings::systemFont() const
 {
-    return m_settings->value(s_systemFontName, "Noto Sans").toString();
+    return availableFontFamily(m_settings->value(s_systemFontName, "Noto Sans").toString(),
+                               QStringLiteral("DejaVu Sans"));
 }
 
 QString HintsSettings::systemFixedFont() const
 {
-    return m_settings->value(s_systemFixedFontName, "Monospace").toString();
+    return availableFontFamily(m_settings->value(s_systemFixedFontName, "Monospace").toString(),
+                               QStringLiteral("DejaVu Sans Mono"));
 }
 
 qreal HintsSettings::systemFontPointSize() const

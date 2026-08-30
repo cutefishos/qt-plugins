@@ -17,9 +17,6 @@ find_path(QT6XDGICONLOADER_PRIVATE_INCLUDE_DIR
     REQUIRED
 )
 
-# qdbusmenubar uses them
-remove_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
-
 # xcb-ewmh was never used by this plugin and is no longer pulled in by Qt.
 pkg_check_modules(XCB REQUIRED IMPORTED_TARGET xcb x11)
 
@@ -31,8 +28,6 @@ set (SRCS
     hintsettings.cpp
     systemtrayicon.h
     systemtrayicon.cpp
-    qdbusmenubar_p.h
-    qdbusmenubar.cpp
     x11integration.h
     x11integration.cpp
     statusnotifier/dbustypes.h
