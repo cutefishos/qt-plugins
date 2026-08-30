@@ -5,20 +5,14 @@ Maintainer: CutefishOS <support@cutefishos.com>
 Build-Depends: cmake,
                debhelper (>= 9),
                extra-cmake-modules,
-               libqt5x11extras5-dev,
-               libkf5windowsystem-dev,
-               libqt5xdg-dev,
-               libdbusmenu-qt5-dev,
+               libkf6windowsystem-dev,
+               libqt6xdg-dev,
                libxcb-shape0-dev,
                libxcb-icccm4-dev,
                libxcb1-dev,
-               libxcb-ewmh-dev,
-               qtbase5-dev,
-               qtbase5-private-dev,
-               qtdeclarative5-dev,
-               qtquickcontrols2-5-dev,
-               qttools5-dev,
-               qttools5-dev-tools
+               qt6-base-dev,
+               qt6-base-private-dev,
+               qt6-declarative-dev
 Standards-Version: 4.5.0
 Homepage: https://cutefishos.com
 
