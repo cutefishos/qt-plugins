@@ -1,7 +1,13 @@
 #ifndef PLATFORMTHEME_H
 #define PLATFORMTHEME_H
 
+#include <QtGlobal>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+#include <private/qgenericunixtheme_p.h>
+#else
 #include <private/qgenericunixthemes_p.h>
+#endif
 #include "hintsettings.h"
 #include "systemtrayicon.h"
 
