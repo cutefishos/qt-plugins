@@ -6,14 +6,17 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets QuickControls2 DBus)
-find_package(Qt6Gui CONFIG REQUIRED Private)
+find_package(Qt6Gui CONFIG QUIET COMPONENTS Private)
+if(NOT TARGET Qt6::GuiPrivate)
+    find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+endif()
 find_package(KF6WindowSystem REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Qt6XdgIconLoader REQUIRED IMPORTED_TARGET Qt6XdgIconLoader)
 find_path(QT6XDGICONLOADER_PRIVATE_INCLUDE_DIR
     NAMES private/xdgiconloader/xdgiconloader_p.h
-    PATHS /usr/include/qt6xdgiconloader
-    PATH_SUFFIXES 4.1.0
+    PATHS ${Qt6XdgIconLoader_INCLUDE_DIRS} /usr/include/qt6xdgiconloader
+    PATH_SUFFIXES ${Qt6XdgIconLoader_VERSION}
     REQUIRED
 )
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(cutefishstyle)
 
 set(TARGET cutefishstyle)
@@ -11,7 +11,10 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} ${CMAKE_CURRENT_S
 
 set(QT Core Gui Widgets DBus)
 find_package(Qt6 REQUIRED ${QT})
-find_package(Qt6Gui CONFIG REQUIRED Private)
+find_package(Qt6Gui CONFIG QUIET COMPONENTS Private)
+if(NOT TARGET Qt6::GuiPrivate)
+    find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+endif()
 find_package(PkgConfig REQUIRED)
 find_package(KF6WindowSystem REQUIRED)
 
