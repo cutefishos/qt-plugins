@@ -19,11 +19,12 @@
  *  Boston, MA 02110-1301, USA.
  */
 #include "x11integration.h"
+#include "x11utils.h"
 
 #include <QCoreApplication>
-#include <QX11Info>
 #include <QPlatformSurfaceEvent>
 #include <QGuiApplication>
+#include <QtGui/qguiapplication_platform.h>
 #include <QWindow>
 #include <QWidget>
 #include <QVariant>
@@ -58,7 +59,7 @@ bool X11Integration::eventFilter(QObject *watched, QEvent *event)
     if (event->type() == QEvent::Show && watched->inherits("QShapedPixmapWindow")) {
         //static cast should be safe there
         QWindow *w = static_cast<QWindow *>(watched);
-        NETWinInfo info(QX11Info::connection(), w->winId(), QX11Info::appRootWindow(), NET::WMWindowType, NET::Properties2());
+        NETWinInfo info(qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->connection(), w->winId(), Cutefish::X11::rootWindow(), NET::WMWindowType, NET::Properties2());
         info.setWindowType(NET::DNDIcon);
         // TODO: does this flash the xcb connection?
     }
@@ -103,13 +104,13 @@ void X11Integration::installDesktopFileName(QWindow *w)
     if (desktopFileName.endsWith(QLatin1String(".desktop"))) {
         desktopFileName.chop(8);
     }
-    NETWinInfo info(QX11Info::connection(), w->winId(), QX11Info::appRootWindow(), NET::Properties(), NET::Properties2());
+    NETWinInfo info(qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->connection(), w->winId(), Cutefish::X11::rootWindow(), NET::Properties(), NET::Properties2());
     info.setDesktopFileName(desktopFileName.toUtf8().constData());
 }
 
 void X11Integration::setWindowProperty(QWindow *window, const QByteArray &name, const QByteArray &value)
 {
-    auto *c = QX11Info::connection();
+    auto *c = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->connection();
 
     xcb_atom_t atom;
     auto it = m_atoms.find(name);

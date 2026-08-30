@@ -30,6 +30,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "blurhelper.h"
+#include "x11utils.h"
 
 // KDE Frameworks
 #include <KWindowEffects>
@@ -43,7 +44,7 @@
 #include <QEvent>
 #include <QPainterPath>
 #include <QApplication>
-#include <QX11Info>
+#include <QtGui/qguiapplication_platform.h>
 
 // XCB
 #include <xcb/xcb.h>
@@ -124,7 +125,7 @@ void BlurHelper::enableBlurBehind(QWidget *widget, bool enable, qreal windowRadi
     if (!widget)
         return;
 
-    xcb_connection_t *c = QX11Info::connection();
+    xcb_connection_t *c = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->connection();
     if (!c)
         return;
 
