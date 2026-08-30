@@ -64,7 +64,7 @@ QVariant PlatformTheme::themeHint(QPlatformTheme::ThemeHint hintType) const
     if (hint.isValid()) {
         return hint;
     } else {
-        return QPlatformTheme::themeHint(hintType);
+        return QGenericUnixTheme::themeHint(hintType);
     }
 }
 
@@ -108,15 +108,7 @@ const QFont* PlatformTheme::font(Font type) const
         }
     }
 
-    return QPlatformTheme::font(type);
-}
-
-QPlatformMenuBar *PlatformTheme::createPlatformMenuBar() const
-{
-    // Qt 6 no longer exports the private QDBusPlatformMenu implementation
-    // used by the old Qt 5 global-menu code. The old implementation would
-    // make this platform theme plugin fail to load at runtime.
-    return nullptr;
+    return QGenericUnixTheme::font(type);
 }
 
 void PlatformTheme::onFontChanged()
@@ -148,8 +140,10 @@ void PlatformTheme::onIconThemeChanged()
 
 void PlatformTheme::setQtQuickControlsTheme()
 {
-    //if the user has explicitly set something else, don't meddle
-    if (!QQuickStyle::name().isEmpty()) {
+    // Qt 6's QQuickStyle::name() resolves to the default style instead of
+    // returning an empty string, so it can no longer tell us whether the user
+    // picked a style explicitly. Honour the environment variable instead.
+    if (!qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
         return;
     }
 
@@ -161,5 +155,5 @@ void PlatformTheme::setQtQuickControlsTheme()
         return;
     }
 
-    QQuickStyle::setStyle(QLatin1String("fish-style"));
+    QQuickStyle::setStyle(QLatin1String("Fish"));
 }

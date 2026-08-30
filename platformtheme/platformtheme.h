@@ -1,7 +1,7 @@
 #ifndef PLATFORMTHEME_H
 #define PLATFORMTHEME_H
 
-#include <qpa/qplatformtheme.h>
+#include <private/qgenericunixthemes_p.h>
 #include "hintsettings.h"
 #include "systemtrayicon.h"
 
@@ -12,7 +12,7 @@ class QIconEngine;
 class QWindow;
 class X11Integration;
 
-class PlatformTheme : public QObject, public QPlatformTheme
+class PlatformTheme : public QObject, public QGenericUnixTheme
 {
     Q_OBJECT
 
@@ -23,7 +23,6 @@ public:
     QVariant themeHint(ThemeHint hint) const override;
     const QFont *font(Font type) const override;
 
-    QPlatformMenuBar *createPlatformMenuBar() const override;
 
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override {
         auto trayIcon = new SystemTrayIcon;
