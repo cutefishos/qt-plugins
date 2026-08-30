@@ -14,8 +14,6 @@ find_package(Qt5 REQUIRED ${QT})
 find_package(PkgConfig REQUIRED)
 find_package(KF5 REQUIRED WindowSystem)
 
-include(ECMQueryQmake)
-
 set (SRCS
     blurhelper.cpp
     blurhelper.h
@@ -44,6 +42,8 @@ target_link_libraries(${TARGET}
     KF5::WindowSystem
     )
 
-query_qmake(CMAKE_INSTALL_QTPLUGINDIR QT_INSTALL_PLUGINS)
+find_program(QT_QMAKE_EXECUTABLE NAMES qmake-qt5 qmake REQUIRED)
+execute_process(COMMAND "${QT_QMAKE_EXECUTABLE}" -query QT_INSTALL_PLUGINS
+    OUTPUT_VARIABLE CMAKE_INSTALL_QTPLUGINDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 install(TARGETS ${TARGET} DESTINATION ${CMAKE_INSTALL_QTPLUGINDIR}/styles/)
