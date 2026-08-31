@@ -4,7 +4,7 @@ Unify Qt application style of CutefishOS.
 
 ## Dependencies
 
-`sudo pacman -S gcc extra-cmake-modules qt6-base qt6-tools libqtxdg`
+`sudo pacman -S gcc extra-cmake-modules qt6-base qt6-tools libqtxdg librsvg`
 
 ## Build
 
