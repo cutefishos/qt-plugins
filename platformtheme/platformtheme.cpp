@@ -1,5 +1,4 @@
 #include "platformtheme.h"
-#include "x11integration.h"
 
 #include <QApplication>
 #include <QFont>
@@ -16,8 +15,6 @@
 #include <private/qiconloader_p.h>
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
-
-#include <KWindowSystem>
 
 extern void updateXdgIconSystemTheme();
 
@@ -39,11 +36,6 @@ PlatformTheme::PlatformTheme()
     : m_hints(new HintsSettings)
 {
     // qApp->setProperty("_hints_settings_object", (quintptr)m_hints);
-
-    if (KWindowSystem::isPlatformX11()) {
-        m_x11Integration.reset(new X11Integration());
-        m_x11Integration->init();
-    }
 
     connect(m_hints, &HintsSettings::systemFontChanged, this, &PlatformTheme::onFontChanged);
     connect(m_hints, &HintsSettings::systemFontPointSizeChanged, this, &PlatformTheme::onFontChanged);

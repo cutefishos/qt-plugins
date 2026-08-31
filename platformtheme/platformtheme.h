@@ -16,8 +16,6 @@
 
 class QIconEngine;
 class QWindow;
-class X11Integration;
-
 class PlatformTheme : public QObject, public QGenericUnixTheme
 {
     Q_OBJECT
@@ -47,7 +45,6 @@ private:
 
 private:
     HintsSettings *m_hints;
-    QScopedPointer<X11Integration> m_x11Integration;
 };
 
 #endif // PLATFORMTHEME_H

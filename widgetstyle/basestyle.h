@@ -26,8 +26,6 @@
 #include <QCommonStyle>
 
 class BaseStylePrivate;
-class ShadowHelper;
-class BlurHelper;
 class BaseStyle : public QCommonStyle
 {
     Q_OBJECT
@@ -106,9 +104,6 @@ protected:
 
     BaseStylePrivate* d;
 
-private:
-    ShadowHelper *m_shadowHelper;
-    BlurHelper *m_blurHelper;
 };
 
 #endif

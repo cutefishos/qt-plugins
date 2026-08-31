@@ -16,23 +16,14 @@ if(NOT TARGET Qt6::GuiPrivate)
     find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
 endif()
 find_package(PkgConfig REQUIRED)
-find_package(KF6WindowSystem REQUIRED)
 
 set (SRCS
-    blurhelper.cpp
-    blurhelper.h
     pstyleplugin.cpp
     pstyleplugin.h
     basestyle.h
     basestyle.cpp
     phantomcolor.h
     phantomcolor.cpp
-    shadowhelper.h
-    shadowhelper.cpp
-    tileset.h
-    tileset.cpp
-    boxshadowrenderer.h
-    boxshadowrenderer.cpp
 )
 
 add_library(${TARGET} MODULE ${SRCS})
@@ -42,7 +33,6 @@ target_link_libraries(${TARGET}
     Qt6::Gui
     Qt6::Widgets
     Qt6::DBus
-    KF6::WindowSystem
     )
 
 find_program(QT_PATHS_EXECUTABLE NAMES qtpaths6 REQUIRED)

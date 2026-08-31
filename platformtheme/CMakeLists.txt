@@ -10,7 +10,6 @@ find_package(Qt6Gui CONFIG QUIET COMPONENTS Private)
 if(NOT TARGET Qt6::GuiPrivate)
     find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
 endif()
-find_package(KF6WindowSystem REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Qt6XdgIconLoader REQUIRED IMPORTED_TARGET Qt6XdgIconLoader)
 find_path(QT6XDGICONLOADER_PRIVATE_INCLUDE_DIR
@@ -20,9 +19,6 @@ find_path(QT6XDGICONLOADER_PRIVATE_INCLUDE_DIR
     REQUIRED
 )
 
-# xcb-ewmh was never used by this plugin and is no longer pulled in by Qt.
-pkg_check_modules(XCB REQUIRED IMPORTED_TARGET xcb x11)
-
 set (SRCS
     main.cpp
     platformtheme.h
@@ -31,8 +27,6 @@ set (SRCS
     hintsettings.cpp
     systemtrayicon.h
     systemtrayicon.cpp
-    x11integration.h
-    x11integration.cpp
     statusnotifier/dbustypes.h
     statusnotifier/dbustypes.cpp
     statusnotifier/statusnotifieritem.h
@@ -63,8 +57,6 @@ target_link_libraries(cutefishplatformtheme PRIVATE
     Qt6::DBus
     PkgConfig::Qt6XdgIconLoader
 
-    KF6::WindowSystem
-    PkgConfig::XCB
 )
 target_include_directories(cutefishplatformtheme PRIVATE "${QT6XDGICONLOADER_PRIVATE_INCLUDE_DIR}")
 

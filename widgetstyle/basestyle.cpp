@@ -22,8 +22,6 @@
 
 #include "basestyle.h"
 #include "phantomcolor.h"
-#include "shadowhelper.h"
-#include "blurhelper.h"
 
 #include <QAbstractItemView>
 #include <QApplication>
@@ -1405,13 +1403,9 @@ BaseStylePrivate::BaseStylePrivate()
 }
 
 BaseStyle::BaseStyle()
-    : d(new BaseStylePrivate),
-      m_shadowHelper(new ShadowHelper(this)),
-      m_blurHelper(new BlurHelper(this))
+    : d(new BaseStylePrivate)
 {
     setObjectName(QLatin1String("Phantom"));
-
-    m_shadowHelper->setFrameRadius(Phantom::DefaultFrame_Radius);
 }
 
 BaseStyle::~BaseStyle()
@@ -1578,11 +1572,6 @@ void BaseStyle::drawPrimitive(PrimitiveElement elem,
         break;
     }
     case PE_PanelTipLabel: {
-        // force registration of widget
-        if (widget && widget->window()) {
-            m_shadowHelper->registerWidget(widget->window(), true);
-        }
-
         const auto &palette = option->palette;
         const auto &background = palette.color(QPalette::ToolTipBase);
         const qreal radius = Phantom::DefaultFrame_Radius;
@@ -2167,16 +2156,6 @@ void BaseStyle::drawPrimitive(PrimitiveElement elem,
         painter->setBrush(background);
         QRectF frameRect = strokedRect(option->rect, 1);
         painter->drawRoundedRect(frameRect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
-
-        // blur
-        if (widget && widget->window()) {
-//            QPainterPath path;
-//            path.addRoundedRect(option->rect, Phantom::DefaultFrame_Radius, Phantom::DefaultFrame_Radius);
-//            const_cast<QWidget *>(widget)->setMask(path.toFillPolygon().toPolygon());
-//            m_blurHelper->update(const_cast<QWidget *>(widget));
-
-            m_blurHelper->enableBlurBehind(const_cast<QWidget *>(widget), true, Phantom::DefaultFrame_Radius);
-        }
 
         painter->restore();
         break;
@@ -4483,14 +4462,12 @@ void BaseStyle::polish(QWidget *widget)
 
     if (qobject_cast<QMenu *>(widget)) {
         widget->setAttribute(Qt::WA_TranslucentBackground, true);
-        // m_blurHelper->registerWidget(widget);
     }
 
     if (widget->inherits("QTipLabel") || widget->inherits("QComboBoxPrivateContainer")) {
         widget->setAttribute(Qt::WA_TranslucentBackground, true);
     }
 
-    m_shadowHelper->registerWidget(widget);
 }
 
 void BaseStyle::unpolish(QWidget *widget)
@@ -4512,14 +4489,12 @@ void BaseStyle::unpolish(QWidget *widget)
 
     if (qobject_cast<QMenu *>(widget)) {
         widget->setAttribute(Qt::WA_TranslucentBackground, false);
-        // m_blurHelper->unregisterWidget(widget);
     }
 
     if (widget->inherits("QTipLabel")) {
         widget->setAttribute(Qt::WA_TranslucentBackground, false);
     }
 
-    m_shadowHelper->unregisterWidget(widget);
 }
 
 bool BaseStyle::isDarkMode() const
