@@ -1,28 +1,28 @@
 #include "platformtheme.h"
 
 #include <QApplication>
+#include <QDebug>
 #include <QFont>
+#include <QLibrary>
 #include <QPalette>
 #include <QString>
-#include <QVariant>
-#include <QDebug>
-#include <QLibrary>
 #include <QStyleFactory>
+#include <QVariant>
 #include <QtQuickControls2/QQuickStyle>
 
 // Qt Private
+#include <private/qguiapplication_p.h>
 #include <private/qicon_p.h>
 #include <private/qiconloader_p.h>
 #include <private/qwindow_p.h>
-#include <private/qguiapplication_p.h>
+#include <qpa/qwindowsysteminterface.h>
 
 extern void updateXdgIconSystemTheme();
 
 void onDarkModeChanged()
 {
-    if (qApp->applicationName() == "systemsettings"
-                || qApp->applicationName().contains("plasma")
-                || qApp->applicationName().contains("QtCreator")) {
+    if (qApp->applicationName() == "systemsettings" || qApp->applicationName().contains("plasma")
+        || qApp->applicationName().contains("QtCreator")) {
         return;
     }
 
@@ -38,8 +38,14 @@ PlatformTheme::PlatformTheme()
     // qApp->setProperty("_hints_settings_object", (quintptr)m_hints);
 
     connect(m_hints, &HintsSettings::systemFontChanged, this, &PlatformTheme::onFontChanged);
-    connect(m_hints, &HintsSettings::systemFontPointSizeChanged, this, &PlatformTheme::onFontChanged);
+    connect(m_hints, &HintsSettings::systemFontPointSizeChanged, this,
+            &PlatformTheme::onFontChanged);
     connect(m_hints, &HintsSettings::iconThemeChanged, this, &PlatformTheme::onIconThemeChanged);
+    connect(m_hints, &HintsSettings::cursorThemeChanged, this, [] {
+        for (auto *window : qGuiApp->allWindows()) {
+            QWindowSystemInterface::handleThemeChange(window);
+        }
+    });
     connect(m_hints, &HintsSettings::darkModeChanged, &onDarkModeChanged);
 
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, false);
@@ -60,44 +66,44 @@ QVariant PlatformTheme::themeHint(QPlatformTheme::ThemeHint hintType) const
     }
 }
 
-const QFont* PlatformTheme::font(Font type) const
+const QFont *PlatformTheme::font(Font type) const
 {
     switch (type) {
-        case SystemFont:
-        case MessageBoxFont:
-        case LabelFont:
-        case TipLabelFont:
-        case StatusBarFont:
-        case PushButtonFont:
-        case ItemViewFont:
-        case ListViewFont:
-        case HeaderViewFont:
-        case ListBoxFont:
-        case ComboMenuItemFont:
-        case ComboLineEditFont: {
-            const QString &fontName = m_hints->systemFont();
-            qreal fontSize = m_hints->systemFontPointSize();
-            static QFont font = QFont(QString());
-            font.setFamily(fontName);
-            font.setPointSizeF(fontSize);
-            return &font;
-        }
-        case FixedFont: {
-            const QString &fontName = m_hints->systemFixedFont();
-            qreal fontSize = m_hints->systemFontPointSize();
-            static QFont font = QFont(QString());
-            font.setFamily(fontName);
-            font.setPointSizeF(fontSize);
-            return &font;
-        }
-        default: {
-            const QString &fontName = m_hints->systemFont();
-            qreal fontSize = m_hints->systemFontPointSize();
-            static QFont font = QFont(QString());
-            font.setFamily(fontName);
-            font.setPointSizeF(fontSize);
-            return &font;
-        }
+    case SystemFont:
+    case MessageBoxFont:
+    case LabelFont:
+    case TipLabelFont:
+    case StatusBarFont:
+    case PushButtonFont:
+    case ItemViewFont:
+    case ListViewFont:
+    case HeaderViewFont:
+    case ListBoxFont:
+    case ComboMenuItemFont:
+    case ComboLineEditFont: {
+        const QString &fontName = m_hints->systemFont();
+        qreal fontSize = m_hints->systemFontPointSize();
+        static QFont font = QFont(QString());
+        font.setFamily(fontName);
+        font.setPointSizeF(fontSize);
+        return &font;
+    }
+    case FixedFont: {
+        const QString &fontName = m_hints->systemFixedFont();
+        qreal fontSize = m_hints->systemFontPointSize();
+        static QFont font = QFont(QString());
+        font.setFamily(fontName);
+        font.setPointSizeF(fontSize);
+        return &font;
+    }
+    default: {
+        const QString &fontName = m_hints->systemFont();
+        qreal fontSize = m_hints->systemFontPointSize();
+        static QFont font = QFont(QString());
+        font.setFamily(fontName);
+        font.setPointSizeF(fontSize);
+        return &font;
+    }
     }
 
     return QGenericUnixTheme::font(type);
@@ -139,8 +145,7 @@ void PlatformTheme::setQtQuickControlsTheme()
         return;
     }
 
-    if (qApp->applicationName() == "systemsettings"
-            || qApp->applicationName().contains("plasma")) {
+    if (qApp->applicationName() == "systemsettings" || qApp->applicationName().contains("plasma")) {
         QQuickStyle::setStyle("Plasma");
         QStyle *style = QStyleFactory::create("Breeze");
         qApp->setStyle(style);
