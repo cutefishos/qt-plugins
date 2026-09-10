@@ -43,7 +43,7 @@ static QString availableFontFamily(const QString &requested, const QString &fall
 
 HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent)
-    , m_settings(new QSettings(QSettings::UserScope, "cutefishos", "theme"))
+    , m_settings(new QSettings(QSettings::UserScope, "cutefish", "theme"))
 {
     m_iconTheme = m_settings->value("IconTheme", "Crule").toString();
 
