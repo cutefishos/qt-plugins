@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(cutefish-qt-plugins)
+# C is needed for the generated Wayland protocol marshalling.
+project(cutefish-qt-plugins LANGUAGES C CXX)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 

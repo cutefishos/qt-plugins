@@ -201,11 +201,13 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
         portalOptions.insert(QStringLiteral("current_name"), selected.fileName());
     }
 
-    // Wayland needs an exported xdg_foreign handle, which neither side supports
-    // yet; without one the dialog opens unparented.
+    // The dialog runs in another process, so it can only be parented onto an
+    // identifier: an X11 window id, or an xdg-foreign handle on Wayland.
     QString parentWindow;
     if (parent && QGuiApplication::platformName() == QLatin1String("xcb"))
         parentWindow = QStringLiteral("x11:%1").arg(parent->winId(), 0, 16);
+    else if (parent)
+        parentWindow = m_parentExport.exportWindow(parent);
 
     QString title = dialogOptions->windowTitle();
     if (title.isEmpty())

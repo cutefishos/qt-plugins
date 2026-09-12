@@ -1,6 +1,8 @@
 #ifndef FILEDIALOGHELPER_H
 #define FILEDIALOGHELPER_H
 
+#include "waylandexport.h"
+
 #include <QDBusObjectPath>
 #include <QEventLoop>
 #include <QUrl>
@@ -39,6 +41,7 @@ private:
     void closeRequest();
 
     QDBusObjectPath m_request;
+    WaylandExport m_parentExport;
     QEventLoop m_loop;
     QUrl m_directory;
     QUrl m_selectedFile;
