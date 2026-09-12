@@ -2,7 +2,6 @@
 
 #include <QDBusArgument>
 #include <QDBusConnection>
-#include <QDBusConnectionInterface>
 #include <QDBusMessage>
 #include <QDBusMetaType>
 #include <QDBusPendingCallWatcher>
@@ -116,18 +115,6 @@ QByteArray portalPathValue(const QUrl &url)
 }
 
 } // namespace
-
-bool FileDialogHelper::isPortalAvailable()
-{
-    static const bool available = [] {
-        // Escape hatch for a broken or hanging portal.
-        if (qEnvironmentVariableIsSet("CUTEFISH_NO_PORTAL_FILE_DIALOG"))
-            return false;
-        auto *interface = QDBusConnection::sessionBus().interface();
-        return interface && interface->isServiceRegistered(portalService).value();
-    }();
-    return available;
-}
 
 FileDialogHelper::FileDialogHelper()
 {

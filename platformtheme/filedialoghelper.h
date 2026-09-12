@@ -15,8 +15,6 @@ class FileDialogHelper : public QPlatformFileDialogHelper
     Q_OBJECT
 
 public:
-    static bool isPortalAvailable();
-
     FileDialogHelper();
     ~FileDialogHelper() override;
 
