@@ -1,4 +1,5 @@
 #include "platformtheme.h"
+#include "filedialoghelper.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -107,6 +108,18 @@ const QFont *PlatformTheme::font(Font type) const
     }
 
     return QGenericUnixTheme::font(type);
+}
+
+bool PlatformTheme::usePlatformNativeDialog(DialogType type) const
+{
+    return type == FileDialog && FileDialogHelper::isPortalAvailable();
+}
+
+QPlatformDialogHelper *PlatformTheme::createPlatformDialogHelper(DialogType type) const
+{
+    if (type != FileDialog || !FileDialogHelper::isPortalAvailable())
+        return QGenericUnixTheme::createPlatformDialogHelper(type);
+    return new FileDialogHelper;
 }
 
 void PlatformTheme::onFontChanged()

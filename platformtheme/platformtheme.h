@@ -16,6 +16,7 @@
 
 class QIconEngine;
 class QWindow;
+
 class PlatformTheme : public QObject, public QGenericUnixTheme
 {
     Q_OBJECT
@@ -27,8 +28,11 @@ public:
     QVariant themeHint(ThemeHint hint) const override;
     const QFont *font(Font type) const override;
 
+    bool usePlatformNativeDialog(DialogType type) const override;
+    QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
 
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override {
+    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override
+    {
         auto trayIcon = new SystemTrayIcon;
         if (trayIcon->isSystemTrayAvailable())
             return trayIcon;

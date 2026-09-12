@@ -23,6 +23,8 @@ set (SRCS
     main.cpp
     platformtheme.h
     platformtheme.cpp
+    filedialoghelper.h
+    filedialoghelper.cpp
     hintsettings.h
     hintsettings.cpp
     systemtrayicon.h
