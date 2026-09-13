@@ -43,6 +43,7 @@ Q_SIGNALS:
 
 private:
     void onFileChanged(const QString &path);
+    void updateIconThemeHint();
 
 private:
     QHash<QPlatformTheme::ThemeHint, QVariant> m_hints;

@@ -25,8 +25,9 @@ static const QByteArray s_systemFontName = QByteArrayLiteral("Font");
 static const QByteArray s_systemFixedFontName = QByteArrayLiteral("FixedFont");
 static const QByteArray s_systemPointFontSize = QByteArrayLiteral("FontSize");
 static const QByteArray s_darkModeName = QByteArrayLiteral("DarkMode");
-static const QByteArray s_lightIconName = QByteArrayLiteral("Crule");
-static const QByteArray s_darkIconName = QByteArrayLiteral("Crule-dark");
+static const QString s_autoIconName = QStringLiteral("Cutefish");
+static const QString s_lightIconName = QStringLiteral("Cutefish-Light");
+static const QString s_darkIconName = QStringLiteral("Cutefish-Dark");
 
 static QString availableFontFamily(const QString &requested, const QString &fallback)
 {
@@ -45,15 +46,9 @@ HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent)
     , m_settings(new QSettings(QSettings::UserScope, "cutefish", "theme"))
 {
-    m_iconTheme = m_settings->value("IconTheme", "Crule").toString();
+    m_iconTheme = m_settings->value("IconTheme", s_autoIconName).toString();
+    updateIconThemeHint();
 
-    if (m_iconTheme.contains("Crule"))
-        m_hints[QPlatformTheme::SystemIconThemeName] =
-                darkMode() ? s_darkIconName : s_lightIconName;
-    else
-        m_hints[QPlatformTheme::SystemIconThemeName] = m_iconTheme;
-
-    m_hints[QPlatformTheme::SystemIconFallbackThemeName] = s_lightIconName;
     m_hints[QPlatformTheme::StyleNames] = "cutefish";
     m_hints[QPlatformTheme::SystemIconFallbackThemeName] = QStringLiteral("hicolor");
     m_hints[QPlatformTheme::IconThemeSearchPaths] = xdgIconThemePaths();
@@ -118,6 +113,16 @@ qreal HintsSettings::systemFontPointSize() const
     return m_settings->value(s_systemPointFontSize, 9).toDouble();
 }
 
+void HintsSettings::updateIconThemeHint()
+{
+    // "Cutefish" and the legacy Crule names follow dark mode.
+    const bool followsDarkMode = m_iconTheme.isEmpty() || m_iconTheme == s_autoIconName
+            || m_iconTheme.startsWith(QLatin1String("Crule"));
+
+    m_hints[QPlatformTheme::SystemIconThemeName] =
+            followsDarkMode ? (darkMode() ? s_darkIconName : s_lightIconName) : m_iconTheme;
+}
+
 bool HintsSettings::darkMode()
 {
     return m_settings->value(s_darkModeName, false).toBool();
@@ -147,19 +152,11 @@ void HintsSettings::onFileChanged(const QString &path)
                 emit systemFontPointSizeChanged(newValue.toDouble());
             else if (value == s_darkModeName) {
                 emit darkModeChanged(newValue.toBool());
-                // Need to update the icon to dark
-
-                if (m_iconTheme.contains("Crule"))
-                    m_hints[QPlatformTheme::SystemIconThemeName] =
-                            darkMode() ? s_darkIconName : s_lightIconName;
-
+                updateIconThemeHint();
                 emit iconThemeChanged();
             } else if (value == "IconTheme") {
-                if (!m_iconTheme.contains("Crule")) {
-                    m_iconTheme = newValue.toString();
-                    m_hints[QPlatformTheme::SystemIconThemeName] = m_iconTheme;
-                }
-
+                m_iconTheme = newValue.toString();
+                updateIconThemeHint();
                 emit iconThemeChanged();
             }
         }
