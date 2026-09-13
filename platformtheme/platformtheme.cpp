@@ -7,7 +7,6 @@
 #include <QLibrary>
 #include <QPalette>
 #include <QString>
-#include <QStyleFactory>
 #include <QVariant>
 
 // Qt Private
@@ -19,17 +18,39 @@
 
 extern void updateXdgIconSystemTheme();
 
-void onDarkModeChanged()
+static QPalette darkPalette()
 {
-    if (qApp->applicationName() == "systemsettings" || qApp->applicationName().contains("plasma")
-        || qApp->applicationName().contains("QtCreator")) {
-        return;
-    }
+    const QColor window(45, 45, 45);
+    const QColor base(30, 30, 30);
+    const QColor text(230, 230, 230);
+    const QColor disabledText(127, 127, 127);
+    const QColor highlight(42, 130, 218);
 
-    QStyle *style = QStyleFactory::create("cutefish");
-    if (style) {
-        qApp->setStyle(style);
-    }
+    QPalette palette(window);
+    palette.setColor(QPalette::WindowText, text);
+    palette.setColor(QPalette::Base, base);
+    palette.setColor(QPalette::AlternateBase, window);
+    palette.setColor(QPalette::ToolTipBase, window);
+    palette.setColor(QPalette::ToolTipText, text);
+    palette.setColor(QPalette::PlaceholderText, disabledText);
+    palette.setColor(QPalette::Text, text);
+    palette.setColor(QPalette::Button, window);
+    palette.setColor(QPalette::ButtonText, text);
+    palette.setColor(QPalette::BrightText, Qt::red);
+    palette.setColor(QPalette::Link, highlight);
+    palette.setColor(QPalette::Highlight, highlight);
+    palette.setColor(QPalette::HighlightedText, Qt::white);
+    palette.setColor(QPalette::Light, window.lighter(150));
+    palette.setColor(QPalette::Midlight, window.lighter(125));
+    palette.setColor(QPalette::Mid, window.darker(125));
+    palette.setColor(QPalette::Dark, window.darker(150));
+    palette.setColor(QPalette::Shadow, Qt::black);
+    palette.setColor(QPalette::Disabled, QPalette::WindowText, disabledText);
+    palette.setColor(QPalette::Disabled, QPalette::Text, disabledText);
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText, disabledText);
+    palette.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledText);
+    palette.setColor(QPalette::Disabled, QPalette::Highlight, window.lighter(130));
+    return palette;
 }
 
 PlatformTheme::PlatformTheme()
@@ -46,7 +67,9 @@ PlatformTheme::PlatformTheme()
             QWindowSystemInterface::handleThemeChange(window);
         }
     });
-    connect(m_hints, &HintsSettings::darkModeChanged, &onDarkModeChanged);
+    connect(m_hints, &HintsSettings::darkModeChanged, this, [] {
+        QWindowSystemInterface::handleThemeChange();
+    });
 
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, false);
 }
@@ -63,6 +86,21 @@ QVariant PlatformTheme::themeHint(QPlatformTheme::ThemeHint hintType) const
     } else {
         return QGenericUnixTheme::themeHint(hintType);
     }
+}
+
+Qt::ColorScheme PlatformTheme::colorScheme() const
+{
+    return m_hints->darkMode() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
+}
+
+const QPalette *PlatformTheme::palette(Palette type) const
+{
+    if (type == SystemPalette && m_hints->darkMode()) {
+        static const QPalette dark = darkPalette();
+        return &dark;
+    }
+
+    return QGenericUnixTheme::palette(type);
 }
 
 const QFont *PlatformTheme::font(Font type) const

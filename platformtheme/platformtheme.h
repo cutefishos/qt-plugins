@@ -26,6 +26,8 @@ public:
     ~PlatformTheme() override;
 
     QVariant themeHint(ThemeHint hint) const override;
+    Qt::ColorScheme colorScheme() const override;
+    const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type) const override;
 
     bool usePlatformNativeDialog(DialogType type) const override;
