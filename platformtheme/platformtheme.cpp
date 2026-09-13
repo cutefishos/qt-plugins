@@ -9,7 +9,6 @@
 #include <QString>
 #include <QStyleFactory>
 #include <QVariant>
-#include <QtQuickControls2/QQuickStyle>
 
 // Qt Private
 #include <private/qguiapplication_p.h>
@@ -50,7 +49,6 @@ PlatformTheme::PlatformTheme()
     connect(m_hints, &HintsSettings::darkModeChanged, &onDarkModeChanged);
 
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, false);
-    setQtQuickControlsTheme();
 }
 
 PlatformTheme::~PlatformTheme()
@@ -147,23 +145,4 @@ void PlatformTheme::onIconThemeChanged()
 
         qApp->sendEvent(window, &update);
     }
-}
-
-void PlatformTheme::setQtQuickControlsTheme()
-{
-    // Qt 6's QQuickStyle::name() resolves to the default style instead of
-    // returning an empty string, so it can no longer tell us whether the user
-    // picked a style explicitly. Honour the environment variable instead.
-    if (!qEnvironmentVariableIsEmpty("QT_QUICK_CONTROLS_STYLE")) {
-        return;
-    }
-
-    if (qApp->applicationName() == "systemsettings" || qApp->applicationName().contains("plasma")) {
-        QQuickStyle::setStyle("Plasma");
-        QStyle *style = QStyleFactory::create("Breeze");
-        qApp->setStyle(style);
-        return;
-    }
-
-    QQuickStyle::setStyle(QLatin1String("Fish"));
 }

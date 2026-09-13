@@ -45,7 +45,6 @@ public:
 private:
     void onFontChanged();
     void onIconThemeChanged();
-    void setQtQuickControlsTheme();
 
 private:
     HintsSettings *m_hints;

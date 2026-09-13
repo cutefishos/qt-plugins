@@ -5,7 +5,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets QuickControls2 DBus)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets DBus)
 find_package(Qt6Gui CONFIG QUIET COMPONENTS Private)
 if(NOT TARGET Qt6::GuiPrivate)
     find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
@@ -86,7 +86,6 @@ target_compile_definitions(cutefishplatformtheme
 target_link_libraries(cutefishplatformtheme PRIVATE
     Qt6::GuiPrivate
     Qt6::Widgets
-    Qt6::QuickControls2
     Qt6::Core
     Qt6::DBus
     PkgConfig::Qt6XdgIconLoader
