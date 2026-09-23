@@ -32,6 +32,7 @@ public:
 public Q_SLOTS:
     void lazyInit();
     void updateCursorHints();
+    void updateIconTheme();
 
 Q_SIGNALS:
     void systemFontChanged(QString font);

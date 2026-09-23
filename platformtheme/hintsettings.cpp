@@ -60,6 +60,12 @@ HintsSettings::HintsSettings(QObject *parent)
                 "com.cutefish.Services", "/com/cutefish/Services/Appearance",
                 "com.cutefish.Services.Appearance", QLatin1String(signal), this,
                 SLOT(updateCursorHints()));
+    // Delivered in order before any application-side icon reload that listens to the same
+    // signal, so QIconLoader is on the new theme first whatever the file watcher does.
+    QDBusConnection::sessionBus().connect("com.cutefish.Services",
+                                          "/com/cutefish/Services/Appearance",
+                                          "com.cutefish.Services.Appearance", "iconThemeChanged",
+                                          this, SLOT(updateIconTheme()));
 
     QMetaObject::invokeMethod(this, "lazyInit", Qt::QueuedConnection);
 }
@@ -146,11 +152,8 @@ void HintsSettings::onFileChanged(const QString &path)
                 emit systemFontPointSizeChanged(newValue.toDouble());
             else if (value == s_darkModeName)
                 emit darkModeChanged(newValue.toBool());
-            else if (value == "IconTheme") {
-                m_iconTheme = newValue.toString();
-                updateIconThemeHint();
-                emit iconThemeChanged();
-            }
+            else if (value == "IconTheme")
+                updateIconTheme();
         }
     }
 
@@ -158,6 +161,18 @@ void HintsSettings::onFileChanged(const QString &path)
     if (fileDeleted)
         m_fileWatcher->addPath(m_settingsFile);
     updateCursorHints();
+}
+
+void HintsSettings::updateIconTheme()
+{
+    m_settings->sync();
+    const QString iconTheme = m_settings->value("IconTheme", s_defaultIconName).toString();
+    if (iconTheme == m_iconTheme)
+        return;
+
+    m_iconTheme = iconTheme;
+    updateIconThemeHint();
+    emit iconThemeChanged();
 }
 
 void HintsSettings::updateCursorHints()
