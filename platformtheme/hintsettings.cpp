@@ -25,9 +25,7 @@ static const QByteArray s_systemFontName = QByteArrayLiteral("Font");
 static const QByteArray s_systemFixedFontName = QByteArrayLiteral("FixedFont");
 static const QByteArray s_systemPointFontSize = QByteArrayLiteral("FontSize");
 static const QByteArray s_darkModeName = QByteArrayLiteral("DarkMode");
-static const QString s_autoIconName = QStringLiteral("Cutefish");
-static const QString s_lightIconName = QStringLiteral("Cutefish-Light");
-static const QString s_darkIconName = QStringLiteral("Cutefish-Dark");
+static const QString s_defaultIconName = QStringLiteral("Cutefish");
 
 static QString availableFontFamily(const QString &requested, const QString &fallback)
 {
@@ -46,7 +44,7 @@ HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent)
     , m_settings(new QSettings(QSettings::UserScope, "cutefish", "theme"))
 {
-    m_iconTheme = m_settings->value("IconTheme", s_autoIconName).toString();
+    m_iconTheme = m_settings->value("IconTheme", s_defaultIconName).toString();
     updateIconThemeHint();
 
     m_hints[QPlatformTheme::StyleNames] = QStringList {QStringLiteral("Fusion")};
@@ -115,12 +113,8 @@ qreal HintsSettings::systemFontPointSize() const
 
 void HintsSettings::updateIconThemeHint()
 {
-    // "Cutefish" and the legacy Crule names follow dark mode.
-    const bool followsDarkMode = m_iconTheme.isEmpty() || m_iconTheme == s_autoIconName
-            || m_iconTheme.startsWith(QLatin1String("Crule"));
-
     m_hints[QPlatformTheme::SystemIconThemeName] =
-            followsDarkMode ? (darkMode() ? s_darkIconName : s_lightIconName) : m_iconTheme;
+            m_iconTheme.isEmpty() ? s_defaultIconName : m_iconTheme;
 }
 
 bool HintsSettings::darkMode()
@@ -150,11 +144,9 @@ void HintsSettings::onFileChanged(const QString &path)
                 emit systemFixedFontChanged(newValue.toString());
             else if (value == s_systemPointFontSize)
                 emit systemFontPointSizeChanged(newValue.toDouble());
-            else if (value == s_darkModeName) {
+            else if (value == s_darkModeName)
                 emit darkModeChanged(newValue.toBool());
-                updateIconThemeHint();
-                emit iconThemeChanged();
-            } else if (value == "IconTheme") {
+            else if (value == "IconTheme") {
                 m_iconTheme = newValue.toString();
                 updateIconThemeHint();
                 emit iconThemeChanged();
