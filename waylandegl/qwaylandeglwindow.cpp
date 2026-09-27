@@ -128,10 +128,13 @@ void QWaylandEglWindow::updateSurface(bool create)
                 }
                 wl_egl_window_resize(m_waylandEglWindow, sizeWithMargins.width(), sizeWithMargins.height(), offset.x(), offset.y());
                 m_requestedSize = sizeWithMargins;
-                m_frameDestination = destination;
 
                 m_resize = true;
             }
+
+            // A scale and size change together can keep the buffer size: the destination
+            // still has to follow.
+            m_frameDestination = destination;
         } else if (create) {
             // reset() write-locks mSurfaceLock before it takes eglSurfaceLock, which the caller
             // holds: blocking here deadlocks, so skip this frame while the surface is torn down.
