@@ -14,6 +14,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLContext>
+#include <QScopeGuard>
 
 QT_BEGIN_NAMESPACE
 
@@ -111,7 +112,6 @@ void QWaylandEglWindow::updateSurface(bool create)
         QWriteLocker lock(&m_bufferSizeLock);
         m_bufferOffset = QPoint();
     } else {
-        QReadLocker locker(&mSurfaceLock);
         if (m_waylandEglWindow) {
             int current_width = 0;
             int current_height = 0;
@@ -132,7 +132,16 @@ void QWaylandEglWindow::updateSurface(bool create)
 
                 m_resize = true;
             }
-        } else if (create && mSurface) {
+        } else if (create) {
+            // reset() write-locks mSurfaceLock before it takes eglSurfaceLock, which the caller
+            // holds: blocking here deadlocks, so skip this frame while the surface is torn down.
+            if (!mSurfaceLock.tryLockForRead())
+                return;
+
+            auto unlock = qScopeGuard([this] { mSurfaceLock.unlock(); });
+            if (!mSurface)
+                return;
+
             wl_egl_window *eglWindow = wl_egl_window_create(mSurface->object(), sizeWithMargins.width(), sizeWithMargins.height());
             if (Q_UNLIKELY(!eglWindow)) {
                 qCWarning(lcQpaWayland, "Could not create wl_egl_window with size %dx%d\n", sizeWithMargins.width(), sizeWithMargins.height());
