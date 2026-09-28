@@ -76,10 +76,11 @@ zxdg_exporter_v2 *sharedExporter(wl_display *display)
 
 QString WaylandExport::exportWindow(QWindow *window)
 {
-    if (m_exported)
-        return QString();
     if (!window)
         return QString();
+    if (m_exported && window == m_window && !m_handle.isEmpty())
+        return QStringLiteral("wayland:") + m_handle;
+    release();
 
     auto *application = qGuiApp->nativeInterface<QNativeInterface::QWaylandApplication>();
     auto *native = window->nativeInterface<QNativeInterface::Private::QWaylandWindow>();
@@ -97,34 +98,40 @@ QString WaylandExport::exportWindow(QWindow *window)
     wl_proxy_set_queue(reinterpret_cast<wl_proxy *>(wrapper), queue);
     m_exported = zxdg_exporter_v2_export_toplevel(wrapper, native->surface());
     wl_proxy_wrapper_destroy(wrapper);
+    m_window = window;
 
-    QString handle;
+    m_handle.clear();
     static const zxdg_exported_v2_listener exportedListener = {
             [](void *data, zxdg_exported_v2 *, const char *handle) {
                 *static_cast<QString *>(data) = QString::fromUtf8(handle);
             }};
-    zxdg_exported_v2_add_listener(m_exported, &exportedListener, &handle);
+    zxdg_exported_v2_add_listener(m_exported, &exportedListener, &m_handle);
     wl_display_roundtrip_queue(m_display, queue);
     // Off the queue that is about to go, onto the display's default one.
     wl_proxy_set_queue(reinterpret_cast<wl_proxy *>(m_exported), nullptr);
 
     wl_event_queue_destroy(queue);
-    if (handle.isEmpty()) {
-        if (m_exported) {
-            zxdg_exported_v2_destroy(m_exported);
-            m_exported = nullptr;
-        }
+    if (m_handle.isEmpty()) {
+        release();
         return QString();
     }
-    return QStringLiteral("wayland:") + handle;
+    return QStringLiteral("wayland:") + m_handle;
 }
 
-WaylandExport::~WaylandExport()
+void WaylandExport::release()
 {
     if (!m_exported)
         return;
     zxdg_exported_v2_destroy(m_exported);
     wl_display_flush(m_display);
+    m_exported = nullptr;
+    m_window = nullptr;
+    m_handle.clear();
+}
+
+WaylandExport::~WaylandExport()
+{
+    release();
 }
 
 #else

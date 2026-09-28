@@ -251,6 +251,14 @@ EGLSurface QWaylandGLContext::createTemporaryOffscreenSurface()
 #else
     EGLSurface eglSurface = eglCreateWindowSurface(eglDisplay(), eglConfig(), m_eglWindow, nullptr);
 #endif
+    if (eglSurface == EGL_NO_SURFACE) {
+        // Nobody calls destroyTemporaryOffscreenSurface for a surface that
+        // never existed.
+        wl_egl_window_destroy(m_eglWindow);
+        m_eglWindow = nullptr;
+        wl_surface_destroy(m_wlSurface);
+        m_wlSurface = nullptr;
+    }
     return eglSurface;
 }
 

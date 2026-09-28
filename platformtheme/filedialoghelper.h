@@ -40,6 +40,9 @@ private:
     void closeRequest();
     void disconnectResponse(const QString &path);
 
+    // Bumped by every show() and hide(); a portal reply from an earlier show
+    // is closed instead of adopted.
+    quint64 m_showSerial = 0;
     QDBusObjectPath m_request;
     WaylandExport m_parentExport;
     QEventLoop m_loop;

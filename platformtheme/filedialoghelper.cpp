@@ -137,6 +137,7 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
 
     // A request still open from an earlier show() would keep its dialog and hook.
     closeRequest();
+    const quint64 serial = ++m_showSerial;
 
     const auto dialogOptions = options();
     const bool saveMode = dialogOptions->acceptMode() == QFileDialogOptions::AcceptSave;
@@ -211,9 +212,19 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
     auto *watcher =
             new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message), this);
     connect(watcher, &QDBusPendingCallWatcher::finished, this,
-            [this](QDBusPendingCallWatcher *call) {
+            [this, serial](QDBusPendingCallWatcher *call) {
                 call->deleteLater();
                 const QDBusPendingReply<QDBusObjectPath> reply = *call;
+                if (serial != m_showSerial) {
+                    // Hidden or shown again before the portal answered: this
+                    // dialog is nobody's now.
+                    if (!reply.isError()) {
+                        QDBusConnection::sessionBus().asyncCall(QDBusMessage::createMethodCall(
+                                portalService, reply.value().path(), requestInterface,
+                                QStringLiteral("Close")));
+                    }
+                    return;
+                }
                 if (reply.isError()) {
                     Q_EMIT reject();
                     m_loop.quit();
@@ -230,6 +241,7 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
 
 void FileDialogHelper::hide()
 {
+    ++m_showSerial;
     closeRequest();
     m_loop.quit();
 }

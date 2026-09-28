@@ -18,12 +18,18 @@ public:
     WaylandExport &operator=(const WaylandExport &) = delete;
 
     // Returns the portal's parent_window identifier, or an empty string when
-    // the window cannot be exported.
+    // the window cannot be exported. A window exported before answers from
+    // the export still held; another window replaces it.
     QString exportWindow(QWindow *window);
 
 private:
+    void release();
+
     struct wl_display *m_display = nullptr;
     struct zxdg_exported_v2 *m_exported = nullptr;
+    QWindow *m_window = nullptr;
+    // The listener writes here; it outlives the roundtrip that fills it.
+    QString m_handle;
 };
 
 #endif // WAYLANDEXPORT_H

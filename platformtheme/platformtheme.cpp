@@ -76,6 +76,7 @@ PlatformTheme::PlatformTheme()
 
 PlatformTheme::~PlatformTheme()
 {
+    delete m_hints;
 }
 
 QVariant PlatformTheme::themeHint(QPlatformTheme::ThemeHint hintType) const
