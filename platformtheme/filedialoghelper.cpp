@@ -135,6 +135,9 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
 {
     Q_UNUSED(flags)
 
+    // A request still open from an earlier show() would keep its dialog and hook.
+    closeRequest();
+
     const auto dialogOptions = options();
     const bool saveMode = dialogOptions->acceptMode() == QFileDialogOptions::AcceptSave;
     const bool directoryMode = dialogOptions->fileMode() == QFileDialogOptions::Directory
@@ -217,9 +220,10 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
                     return;
                 }
                 m_request = reply.value();
-                QDBusConnection::sessionBus().connect(portalService, m_request.path(),
-                                                      requestInterface, QStringLiteral("Response"),
-                                                      this, SLOT(gotResponse(uint, QVariantMap)));
+                QDBusConnection::sessionBus().connect(
+                        portalService, m_request.path(), requestInterface,
+                        QStringLiteral("Response"), this,
+                        SLOT(gotResponse(uint, QVariantMap, QDBusMessage)));
             });
     return true;
 }
@@ -234,16 +238,28 @@ void FileDialogHelper::closeRequest()
 {
     if (m_request.path().isEmpty())
         return;
-    QDBusConnection::sessionBus().disconnect(portalService, m_request.path(), requestInterface,
-                                             QStringLiteral("Response"), this,
-                                             SLOT(gotResponse(uint, QVariantMap)));
+    disconnectResponse(m_request.path());
     QDBusConnection::sessionBus().asyncCall(QDBusMessage::createMethodCall(
             portalService, m_request.path(), requestInterface, QStringLiteral("Close")));
     m_request = QDBusObjectPath();
 }
 
-void FileDialogHelper::gotResponse(uint response, const QVariantMap &results)
+// Each request has its own path, so its hook and bus match rule stay until
+// disconnected here or the helper is destroyed.
+void FileDialogHelper::disconnectResponse(const QString &path)
 {
+    QDBusConnection::sessionBus().disconnect(portalService, path, requestInterface,
+                                             QStringLiteral("Response"), this,
+                                             SLOT(gotResponse(uint, QVariantMap, QDBusMessage)));
+}
+
+void FileDialogHelper::gotResponse(uint response, const QVariantMap &results,
+                                   const QDBusMessage &message)
+{
+    disconnectResponse(message.path());
+    // A request already closed, or replaced before its reply arrived, can still answer.
+    if (message.path() != m_request.path())
+        return;
     m_request = QDBusObjectPath();
     m_selectedFiles.clear();
 

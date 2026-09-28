@@ -18,6 +18,10 @@ SystemTrayMenu::SystemTrayMenu()
 
 SystemTrayMenu::~SystemTrayMenu()
 {
+    // Qt deletes an item only on ActionRemoved, which a destroyed QMenu never sends.
+    qDeleteAll(m_items);
+    m_items.clear();
+
     if (m_menu)
         m_menu->deleteLater();
 }

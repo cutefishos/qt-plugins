@@ -3,6 +3,7 @@
 
 #include "waylandexport.h"
 
+#include <QDBusMessage>
 #include <QDBusObjectPath>
 #include <QEventLoop>
 #include <QUrl>
@@ -33,10 +34,11 @@ public:
     bool isSupportedUrl(const QUrl &url) const override;
 
 private slots:
-    void gotResponse(uint response, const QVariantMap &results);
+    void gotResponse(uint response, const QVariantMap &results, const QDBusMessage &message);
 
 private:
     void closeRequest();
+    void disconnectResponse(const QString &path);
 
     QDBusObjectPath m_request;
     WaylandExport m_parentExport;
