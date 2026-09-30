@@ -42,8 +42,11 @@ static QString availableFontFamily(const QString &requested, const QString &fall
 
 HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent)
-    , m_settings(new QSettings(QSettings::UserScope, "cutefish", "theme"))
+    , m_settings(new QSettings(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
+                                       + "/cutefish/services.conf",
+                               QSettings::IniFormat))
 {
+    m_settings->beginGroup("Appearance");
     m_iconTheme = m_settings->value("IconTheme", s_defaultIconName).toString();
     updateIconThemeHint();
 
