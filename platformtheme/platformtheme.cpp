@@ -16,8 +16,6 @@
 #include <private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
-extern void updateXdgIconSystemTheme();
-
 static QPalette darkPalette()
 {
     const QColor window(45, 45, 45);
@@ -175,7 +173,6 @@ void PlatformTheme::onFontChanged()
 void PlatformTheme::onIconThemeChanged()
 {
     QIconLoader::instance()->updateSystemTheme();
-    updateXdgIconSystemTheme();
 
     QEvent update(QEvent::UpdateRequest);
     for (QWindow *window : qGuiApp->allWindows()) {

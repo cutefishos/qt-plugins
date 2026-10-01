@@ -14,7 +14,6 @@
 #include <QHash>
 #include <QKeySequence>
 
-class QIconEngine;
 class QWindow;
 
 class PlatformTheme : public QObject, public QGenericUnixTheme

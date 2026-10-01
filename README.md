@@ -9,7 +9,7 @@ It is a port of Qt 6.8's integration and is only built against Qt 6.8.
 
 ## Dependencies
 
-`sudo pacman -S gcc qt6-base qt6-tools libqtxdg librsvg`
+`sudo pacman -S gcc qt6-base qt6-tools librsvg`
 
 ## Build
 
