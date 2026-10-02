@@ -152,7 +152,9 @@ void QWaylandEglWindow::updateSurface(bool create)
             }
 
             QSurfaceFormat fmt = window()->requestedFormat();
-            if (mDisplay->supportsWindowDecoration())
+            // Alpha for a client decoration, unless asked for none: Qt marks such a window
+            // opaque anyway. The context decides alike, as the two must share a config.
+            if (mDisplay->supportsWindowDecoration() && fmt.alphaBufferSize() != 0)
                 fmt.setAlphaBufferSize(8);
             EGLConfig eglConfig = q_configFromGLFormat(m_clientBufferIntegration->eglDisplay(), fmt);
             m_format = q_glFormatFromConfig(m_clientBufferIntegration->eglDisplay(), eglConfig, fmt);

@@ -126,7 +126,8 @@ QWaylandWindow *QWaylandEglClientBufferIntegration::createEglWindow(QWindow *win
 QPlatformOpenGLContext *QWaylandEglClientBufferIntegration::createPlatformOpenGLContext(const QSurfaceFormat &glFormat, QPlatformOpenGLContext *share) const
 {
     QSurfaceFormat fmt = glFormat;
-    if (m_display->supportsWindowDecoration())
+    // As QWaylandEglWindow: a window that asks for no alpha keeps an opaque config.
+    if (m_display->supportsWindowDecoration() && fmt.alphaBufferSize() != 0)
         fmt.setAlphaBufferSize(8);
     return new QWaylandGLContext(m_eglDisplay, m_display, fmt, share);
 }
