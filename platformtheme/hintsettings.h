@@ -1,15 +1,13 @@
 #ifndef HINTSSETTINGS_H
 #define HINTSSETTINGS_H
 
-#include <QDBusVariant>
 #include <QFileSystemWatcher>
+#include <QHash>
 #include <QObject>
 #include <QSettings>
 #include <QVariant>
 
 #include <qpa/qplatformtheme.h>
-
-class QPalette;
 
 class HintsSettings : public QObject
 {
@@ -52,9 +50,6 @@ private:
     QString m_settingsFile;
     QFileSystemWatcher *m_fileWatcher;
 
-    QString m_systemFont;
-    QString m_systemFixedFont;
-    qreal m_systemFontPointSize;
     QString m_iconTheme;
 };
 

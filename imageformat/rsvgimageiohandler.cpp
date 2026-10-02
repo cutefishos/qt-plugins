@@ -6,17 +6,11 @@
 
 #include <librsvg/rsvg.h>
 
-#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <memory>
 
 namespace {
-
-bool isSvg(const QByteArray &data)
-{
-    return data.left(64 * 1024).toLower().contains("<svg");
-}
 
 struct CairoContextDeleter
 {
@@ -74,6 +68,17 @@ RsvgHandlePtr createHandle(const QByteArray &data)
     return handle;
 }
 
+QByteArray readDocument(QIODevice *device)
+{
+    const qint64 position = device->pos();
+    QByteArray data = device->readAll();
+    if (!device->isSequential() && position >= 0) {
+        device->seek(position);
+    }
+
+    return data;
+}
+
 int toPixelDimension(gdouble dimension)
 {
     if (!std::isfinite(dimension) || dimension <= 0.0
@@ -81,15 +86,22 @@ int toPixelDimension(gdouble dimension)
         return 0;
     }
 
-    const gdouble rounded = std::ceil(dimension);
-    if (rounded > static_cast<gdouble>(std::numeric_limits<int>::max())) {
-        return 0;
-    }
-
-    return std::max(1, static_cast<int>(rounded));
+    return static_cast<int>(std::ceil(dimension));
 }
 
 } // namespace
+
+RsvgImageIOHandler::~RsvgImageIOHandler()
+{
+    if (m_handle) {
+        g_object_unref(m_handle);
+    }
+}
+
+bool RsvgImageIOHandler::hasSvgContent(QIODevice *device)
+{
+    return device->peek(64 * 1024).toLower().contains("<svg");
+}
 
 bool RsvgImageIOHandler::canRead() const
 {
@@ -98,7 +110,7 @@ bool RsvgImageIOHandler::canRead() const
     }
 
     return format().compare("svg", Qt::CaseInsensitive) == 0
-        || isSvg(device()->peek(64 * 1024));
+        || hasSvgContent(device());
 }
 
 bool RsvgImageIOHandler::read(QImage *image)
@@ -126,7 +138,7 @@ QVariant RsvgImageIOHandler::option(ImageOption option) const
 void RsvgImageIOHandler::setOption(ImageOption option, const QVariant &value)
 {
     if (option == ScaledSize) {
-        m_scaledSize = value.canConvert<QSize>() ? value.toSize() : QSize();
+        m_scaledSize = value.toSize();
         return;
     }
 
@@ -138,38 +150,23 @@ bool RsvgImageIOHandler::supportsOption(ImageOption option) const
     return option == Size || option == ScaledSize || QImageIOHandler::supportsOption(option);
 }
 
-bool RsvgImageIOHandler::loadData() const
+bool RsvgImageIOHandler::loadIntrinsicSize() const
 {
-    if (m_dataLoaded) {
-        return !m_data.isEmpty();
+    if (m_metadataLoaded) {
+        return m_handle != nullptr;
     }
 
-    m_dataLoaded = true;
+    m_metadataLoaded = true;
     if (!device()) {
         return false;
     }
 
-    const qint64 position = device()->pos();
-    m_data = device()->readAll();
-    if (!device()->isSequential() && position >= 0) {
-        device()->seek(position);
-    }
-
-    return !m_data.isEmpty();
-}
-
-bool RsvgImageIOHandler::loadIntrinsicSize() const
-{
-    if (m_metadataLoaded) {
-        return m_valid;
-    }
-
-    m_metadataLoaded = true;
-    if (!loadData()) {
+    const QByteArray data = readDocument(device());
+    if (data.isEmpty()) {
         return false;
     }
 
-    const RsvgHandlePtr handle = createHandle(m_data);
+    RsvgHandlePtr handle = createHandle(data);
     if (!handle) {
         return false;
     }
@@ -177,17 +174,13 @@ bool RsvgImageIOHandler::loadIntrinsicSize() const
     gdouble width = 0.0;
     gdouble height = 0.0;
     if (!rsvg_handle_get_intrinsic_size_in_pixels(handle.get(), &width, &height)) {
-        gboolean hasWidth = false;
-        gboolean hasHeight = false;
         gboolean hasViewbox = false;
-        RsvgLength intrinsicWidth {};
-        RsvgLength intrinsicHeight {};
         RsvgRectangle viewbox {};
         rsvg_handle_get_intrinsic_dimensions(handle.get(),
-                                             &hasWidth,
-                                             &intrinsicWidth,
-                                             &hasHeight,
-                                             &intrinsicHeight,
+                                             nullptr,
+                                             nullptr,
+                                             nullptr,
+                                             nullptr,
                                              &hasViewbox,
                                              &viewbox);
         if (!hasViewbox || viewbox.width <= 0.0 || viewbox.height <= 0.0) {
@@ -204,21 +197,12 @@ bool RsvgImageIOHandler::loadIntrinsicSize() const
     }
 
     m_intrinsicSize = QSize(pixelWidth, pixelHeight);
-    m_valid = true;
+    m_handle = handle.release();
     return true;
 }
 
 bool RsvgImageIOHandler::render(const QSize &size, QImage *image) const
 {
-    if (!image || !size.isValid() || !loadData()) {
-        return false;
-    }
-
-    const RsvgHandlePtr handle = createHandle(m_data);
-    if (!handle) {
-        return false;
-    }
-
     QImage target(size, QImage::Format_ARGB32_Premultiplied);
     if (target.isNull()) {
         return false;
@@ -253,7 +237,7 @@ bool RsvgImageIOHandler::render(const QSize &size, QImage *image) const
     };
 
     GError *rawError = nullptr;
-    const gboolean rendered = rsvg_handle_render_document(handle.get(), context.get(), &viewport, &rawError);
+    const gboolean rendered = rsvg_handle_render_document(m_handle, context.get(), &viewport, &rawError);
     GErrorPtr error(rawError);
     if (!rendered || cairo_status(context.get()) != CAIRO_STATUS_SUCCESS) {
         return false;
@@ -261,6 +245,6 @@ bool RsvgImageIOHandler::render(const QSize &size, QImage *image) const
 
     context.reset();
     cairo_surface_flush(surface.get());
-    *image = target.copy();
-    return !image->isNull();
+    *image = target;
+    return true;
 }

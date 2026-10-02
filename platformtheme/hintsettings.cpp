@@ -1,24 +1,13 @@
 #include "hintsettings.h"
 
-#include <QApplication>
-#include <QDebug>
-#include <QDialogButtonBox>
 #include <QDir>
 #include <QFileInfo>
-#include <QGuiApplication>
-#include <QMainWindow>
-#include <QPalette>
-#include <QScreen>
+#include <QSize>
 #include <QStandardPaths>
 #include <QString>
-#include <QTemporaryFile>
-#include <QToolBar>
-#include <QToolButton>
 #include <qpa/qplatformdialoghelper.h>
 
-#include <QDBusArgument>
 #include <QDBusConnection>
-#include <QDBusInterface>
 #include <QFontDatabase>
 
 static const QByteArray s_systemFontName = QByteArrayLiteral("Font");
@@ -29,8 +18,7 @@ static const QString s_defaultIconName = QStringLiteral("Cutefish");
 
 static QString availableFontFamily(const QString &requested, const QString &fallback)
 {
-    QFontDatabase database;
-    const QStringList families = database.families();
+    const QStringList families = QFontDatabase::families();
 
     if (families.contains(requested))
         return requested;
@@ -44,7 +32,7 @@ HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent)
     , m_settings(new QSettings(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
                                        + "/cutefish/services.conf",
-                               QSettings::IniFormat))
+                               QSettings::IniFormat, this))
 {
     m_settings->beginGroup("Appearance");
     m_iconTheme = m_settings->value("IconTheme", s_defaultIconName).toString();

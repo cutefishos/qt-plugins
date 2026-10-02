@@ -153,7 +153,6 @@ private:
     // menu
     QMenu *mMenu;
     QDBusObjectPath mMenuPath;
-    QObject *mMenuExporter;
     QDBusConnection mSessionBus;
 
     static int mServiceCounter;

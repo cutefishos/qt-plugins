@@ -4,30 +4,22 @@
 
 #include <QIODevice>
 
-namespace {
-
-bool isSvg(const QByteArray &data)
-{
-    return data.left(64 * 1024).toLower().contains("<svg");
-}
-
-} // namespace
-
 QImageIOPlugin::Capabilities RsvgImagePlugin::capabilities(QIODevice *device, const QByteArray &format) const
 {
-    if (!device || !device->isReadable()) {
+    const bool svgFormat = format.compare("svg", Qt::CaseInsensitive) == 0;
+    if (!device) {
+        return svgFormat ? Capabilities(CanRead) : Capabilities();
+    }
+
+    if (!device->isReadable()) {
         return {};
     }
 
-    if (!format.isEmpty() && format.compare("svg", Qt::CaseInsensitive) != 0) {
-        return {};
+    if (!format.isEmpty()) {
+        return svgFormat ? Capabilities(CanRead) : Capabilities();
     }
 
-    if (format.compare("svg", Qt::CaseInsensitive) == 0) {
-        return CanRead;
-    }
-
-    return isSvg(device->peek(64 * 1024)) ? Capabilities(CanRead) : Capabilities();
+    return RsvgImageIOHandler::hasSvgContent(device) ? Capabilities(CanRead) : Capabilities();
 }
 
 QImageIOHandler *RsvgImagePlugin::create(QIODevice *device, const QByteArray &format) const

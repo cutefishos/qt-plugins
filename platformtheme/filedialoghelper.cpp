@@ -13,6 +13,8 @@
 #include <QRandomGenerator>
 #include <QWindow>
 
+#include <algorithm>
+
 namespace {
 
 const auto portalService = QStringLiteral("org.freedesktop.portal.Desktop");
@@ -105,6 +107,19 @@ Filter filterFromMimeType(const QString &mimeType)
     return filter;
 }
 
+// The portal echoes the display name; Qt callers expect back one of the strings they set.
+QString qtNameFilter(const Filter &filter, const QFileDialogOptions &options)
+{
+    // With hidden details QFileDialog::selectedMimeTypeFilter() compares the bare name.
+    if (options.testOption(QFileDialogOptions::HideNameFilterDetails))
+        return filter.name;
+    for (const QString &nameFilter : options.nameFilters()) {
+        if (filterFromNameFilter(nameFilter).name == filter.name)
+            return nameFilter;
+    }
+    return filter.name;
+}
+
 // The portal wants NUL-terminated paths as byte arrays.
 QByteArray portalPathValue(const QUrl &url)
 {
@@ -159,16 +174,26 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
     QList<Filter> filters;
     for (const QString &mimeType : dialogOptions->mimeTypeFilters())
         filters.append(filterFromMimeType(mimeType));
-    for (const QString &nameFilter : dialogOptions->nameFilters())
-        filters.append(filterFromNameFilter(nameFilter));
+    // QFileDialog::setMimeTypeFilters() also sets each type's name filter; send it once.
+    // The default type's "All files (*)" is not named after its MIME comment and stays.
+    const qsizetype mimeFilterCount = filters.size();
+    for (const QString &nameFilter : dialogOptions->nameFilters()) {
+        const Filter filter = filterFromNameFilter(nameFilter);
+        const auto mimeEnd = filters.cbegin() + mimeFilterCount;
+        if (std::none_of(filters.cbegin(), mimeEnd,
+                         [&filter](const Filter &mime) { return mime.name == filter.name; }))
+            filters.append(filter);
+    }
     if (!filters.isEmpty()) {
         portalOptions.insert(QStringLiteral("filters"), QVariant::fromValue(filters));
         const QString wanted = m_selectedNameFilter.isEmpty()
                 ? dialogOptions->initiallySelectedNameFilter()
                 : m_selectedNameFilter;
         if (!wanted.isEmpty()) {
-            const Filter current = wanted.contains('/') ? filterFromMimeType(wanted)
-                                                        : filterFromNameFilter(wanted);
+            const Filter current =
+                    wanted.contains('/') && !dialogOptions->nameFilters().contains(wanted)
+                    ? filterFromMimeType(wanted)
+                    : filterFromNameFilter(wanted);
             for (const Filter &filter : std::as_const(filters)) {
                 if (filter.name != current.name)
                     continue;
@@ -284,12 +309,13 @@ void FileDialogHelper::gotResponse(uint response, const QVariantMap &results,
             m_directory = m_selectedFile.adjusted(QUrl::RemoveFilename);
             Q_EMIT directoryEntered(m_directory);
             Q_EMIT currentChanged(m_selectedFile);
-            Q_EMIT fileSelected(m_selectedFile);
-            Q_EMIT filesSelected(m_selectedFiles);
+            // QFileDialog::accept() emits the selection signals; fileSelected only for one file.
+            if (m_selectedFiles.size() > 1)
+                Q_EMIT fileSelected(m_selectedFile);
         }
         const auto filter = qdbus_cast<Filter>(results.value(QStringLiteral("current_filter")));
         if (!filter.name.isEmpty()) {
-            m_selectedNameFilter = filter.name;
+            m_selectedNameFilter = qtNameFilter(filter, *options());
             Q_EMIT filterSelected(m_selectedNameFilter);
         }
         Q_EMIT accept();

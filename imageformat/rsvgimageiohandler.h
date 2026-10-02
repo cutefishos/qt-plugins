@@ -1,13 +1,18 @@
 #ifndef RSVGIMAGEIOHANDLER_H
 #define RSVGIMAGEIOHANDLER_H
 
-#include <QByteArray>
 #include <QImageIOHandler>
 #include <QSize>
+
+typedef struct _RsvgHandle RsvgHandle;
 
 class RsvgImageIOHandler final : public QImageIOHandler
 {
 public:
+    ~RsvgImageIOHandler() override;
+
+    static bool hasSvgContent(QIODevice *device);
+
     bool canRead() const override;
     bool read(QImage *image) override;
 
@@ -16,15 +21,13 @@ public:
     bool supportsOption(ImageOption option) const override;
 
 private:
-    bool loadData() const;
     bool loadIntrinsicSize() const;
     bool render(const QSize &size, QImage *image) const;
 
-    mutable QByteArray m_data;
+    // Parsed by loadIntrinsicSize() and kept for render()
+    mutable RsvgHandle *m_handle = nullptr;
     mutable QSize m_intrinsicSize;
-    mutable bool m_dataLoaded = false;
     mutable bool m_metadataLoaded = false;
-    mutable bool m_valid = false;
     QSize m_scaledSize;
 };
 

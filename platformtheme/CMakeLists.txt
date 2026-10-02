@@ -30,8 +30,6 @@ set (SRCS
     statusnotifier/statusnotifieritem.cpp
 )
 
-qt6_add_dbus_interface(SRCS org.kde.StatusNotifierWatcher.xml statusnotifierwatcher_interface)
-
 qt6_add_dbus_adaptor(SRCS
     statusnotifier/org.kde.StatusNotifierItem.xml
     statusnotifier/statusnotifieritem.h

@@ -2,18 +2,14 @@
 #include "filedialoghelper.h"
 
 #include <QApplication>
-#include <QDebug>
 #include <QFont>
-#include <QLibrary>
 #include <QPalette>
 #include <QString>
 #include <QVariant>
+#include <QWindow>
 
 // Qt Private
-#include <private/qguiapplication_p.h>
-#include <private/qicon_p.h>
 #include <private/qiconloader_p.h>
-#include <private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 static QPalette darkPalette()
@@ -54,8 +50,6 @@ static QPalette darkPalette()
 PlatformTheme::PlatformTheme()
     : m_hints(new HintsSettings)
 {
-    // qApp->setProperty("_hints_settings_object", (quintptr)m_hints);
-
     connect(m_hints, &HintsSettings::systemFontChanged, this, &PlatformTheme::onFontChanged);
     connect(m_hints, &HintsSettings::systemFontPointSizeChanged, this,
             &PlatformTheme::onFontChanged);
@@ -104,27 +98,7 @@ const QPalette *PlatformTheme::palette(Palette type) const
 
 const QFont *PlatformTheme::font(Font type) const
 {
-    switch (type) {
-    case SystemFont:
-    case MessageBoxFont:
-    case LabelFont:
-    case TipLabelFont:
-    case StatusBarFont:
-    case PushButtonFont:
-    case ItemViewFont:
-    case ListViewFont:
-    case HeaderViewFont:
-    case ListBoxFont:
-    case ComboMenuItemFont:
-    case ComboLineEditFont: {
-        const QString &fontName = m_hints->systemFont();
-        qreal fontSize = m_hints->systemFontPointSize();
-        static QFont font = QFont(QString());
-        font.setFamily(fontName);
-        font.setPointSizeF(fontSize);
-        return &font;
-    }
-    case FixedFont: {
+    if (type == FixedFont) {
         const QString &fontName = m_hints->systemFixedFont();
         qreal fontSize = m_hints->systemFontPointSize();
         static QFont font = QFont(QString());
@@ -132,17 +106,13 @@ const QFont *PlatformTheme::font(Font type) const
         font.setPointSizeF(fontSize);
         return &font;
     }
-    default: {
-        const QString &fontName = m_hints->systemFont();
-        qreal fontSize = m_hints->systemFontPointSize();
-        static QFont font = QFont(QString());
-        font.setFamily(fontName);
-        font.setPointSizeF(fontSize);
-        return &font;
-    }
-    }
 
-    return QGenericUnixTheme::font(type);
+    const QString &fontName = m_hints->systemFont();
+    qreal fontSize = m_hints->systemFontPointSize();
+    static QFont font = QFont(QString());
+    font.setFamily(fontName);
+    font.setPointSizeF(fontSize);
+    return &font;
 }
 
 bool PlatformTheme::usePlatformNativeDialog(DialogType type) const

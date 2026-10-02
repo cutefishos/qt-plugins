@@ -11,11 +11,6 @@
 #include "hintsettings.h"
 #include "systemtrayicon.h"
 
-#include <QHash>
-#include <QKeySequence>
-
-class QWindow;
-
 class PlatformTheme : public QObject, public QGenericUnixTheme
 {
     Q_OBJECT

@@ -15,9 +15,12 @@ StatusNotifierItem::StatusNotifierItem(QString id, QObject *parent)
     mTitle(QLatin1String("Test")),
     mStatus(QLatin1String("Active")),
     mCategory(QLatin1String("ApplicationStatus")),
+    mIconCacheKey(-1),
+    mOverlayIconCacheKey(-1),
+    mAttentionIconCacheKey(-1),
+    mTooltipIconCacheKey(-1),
     mMenu(nullptr),
     mMenuPath(QLatin1String("/NO_DBUSMENU")),
-    mMenuExporter(nullptr),
     mSessionBus(QDBusConnection::connectToBus(QDBusConnection::SessionBus, mService))
 {
     // Separate DBus connection to the session bus is created, because QDbus does not provide
@@ -68,7 +71,6 @@ void StatusNotifierItem::onMenuDestroyed()
 {
     mMenu = nullptr;
     setMenuPath(QLatin1String("/NO_DBUSMENU"));
-    mMenuExporter = nullptr; //mMenu is a QObject parent of the mMenuExporter
 }
 
 void StatusNotifierItem::setTitle(const QString &title)
@@ -113,7 +115,7 @@ void StatusNotifierItem::setIconByName(const QString &name)
 
 void StatusNotifierItem::setIconByPixmap(const QIcon &icon)
 {
-    if (mIconCacheKey == icon.cacheKey())
+    if (mIconCacheKey == icon.cacheKey() && mIconName.isEmpty())
         return;
 
     mIconCacheKey = icon.cacheKey();
@@ -133,7 +135,7 @@ void StatusNotifierItem::setOverlayIconByName(const QString &name)
 
 void StatusNotifierItem::setOverlayIconByPixmap(const QIcon &icon)
 {
-    if (mOverlayIconCacheKey == icon.cacheKey())
+    if (mOverlayIconCacheKey == icon.cacheKey() && mOverlayIconName.isEmpty())
         return;
 
     mOverlayIconCacheKey = icon.cacheKey();
@@ -153,7 +155,7 @@ void StatusNotifierItem::setAttentionIconByName(const QString &name)
 
 void StatusNotifierItem::setAttentionIconByPixmap(const QIcon &icon)
 {
-    if (mAttentionIconCacheKey == icon.cacheKey())
+    if (mAttentionIconCacheKey == icon.cacheKey() && mAttentionIconName.isEmpty())
         return;
 
     mAttentionIconCacheKey = icon.cacheKey();
@@ -191,7 +193,7 @@ void StatusNotifierItem::setToolTipIconByName(const QString &name)
 
 void StatusNotifierItem::setToolTipIconByPixmap(const QIcon &icon)
 {
-    if (mTooltipIconCacheKey == icon.cacheKey())
+    if (mTooltipIconCacheKey == icon.cacheKey() && mTooltipIconName.isEmpty())
         return;
 
     mTooltipIconCacheKey = icon.cacheKey();
@@ -211,12 +213,10 @@ void StatusNotifierItem::setContextMenu(QMenu* menu)
     }
     mMenu = menu;
 
-    setMenuPath(QLatin1String("/NO_DBUSMENU"));
-
     // Qt 6 no longer ships the old dbusmenu-qt exporter. Keep the notifier
     // alive and expose no menu when that optional bridge is unavailable.
-    delete mMenuExporter;
-    mMenuExporter = nullptr;
+    setMenuPath(QLatin1String("/NO_DBUSMENU"));
+
     if (nullptr != mMenu)
     {
         connect(mMenu, &QObject::destroyed, this, &StatusNotifierItem::onMenuDestroyed);
