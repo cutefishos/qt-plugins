@@ -1,5 +1,6 @@
 #include "platformtheme.h"
 #include "filedialoghelper.h"
+#include "touchpadscrolling.h"
 
 #include <QApplication>
 #include <QFont>
@@ -64,6 +65,8 @@ PlatformTheme::PlatformTheme()
     });
 
     QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar, false);
+    // The application object is still being constructed.
+    QMetaObject::invokeMethod(this, &TouchpadScrolling::install, Qt::QueuedConnection);
 }
 
 PlatformTheme::~PlatformTheme()

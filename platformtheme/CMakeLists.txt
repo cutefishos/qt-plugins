@@ -11,6 +11,7 @@ if(NOT TARGET Qt6::GuiPrivate)
     find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
 endif()
 find_package(PkgConfig REQUIRED)
+find_package(CutefishFramework REQUIRED COMPONENTS Scrolling ScrollingWidgets)
 
 set (SRCS
     main.cpp
@@ -24,6 +25,8 @@ set (SRCS
     hintsettings.cpp
     systemtrayicon.h
     systemtrayicon.cpp
+    touchpadscrolling.h
+    touchpadscrolling.cpp
     statusnotifier/dbustypes.h
     statusnotifier/dbustypes.cpp
     statusnotifier/statusnotifieritem.h
@@ -74,6 +77,8 @@ target_compile_definitions(cutefishplatformtheme
 )
 
 target_link_libraries(cutefishplatformtheme PRIVATE
+    Cutefish::Scrolling
+    Cutefish::ScrollingWidgets
     Qt6::GuiPrivate
     Qt6::Widgets
     Qt6::Core

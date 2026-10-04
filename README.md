@@ -8,6 +8,8 @@ buffer integration.
 
 `sudo pacman -S gcc cmake qt6-base qt6-tools qt6-wayland wayland wayland-protocols librsvg`
 
+and [cutefish-framework](https://github.com/cutefishos/cutefish-framework).
+
 ## Build
 
 ```shell
