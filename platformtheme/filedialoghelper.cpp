@@ -15,12 +15,12 @@
 
 #include <algorithm>
 
-namespace {
+static const auto portalService = QStringLiteral("org.freedesktop.portal.Desktop");
+static const auto portalPath = QStringLiteral("/org/freedesktop/portal/desktop");
+static const auto fileChooserInterface = QStringLiteral("org.freedesktop.portal.FileChooser");
+static const auto requestInterface = QStringLiteral("org.freedesktop.portal.Request");
 
-const auto portalService = QStringLiteral("org.freedesktop.portal.Desktop");
-const auto portalPath = QStringLiteral("/org/freedesktop/portal/desktop");
-const auto fileChooserInterface = QStringLiteral("org.freedesktop.portal.FileChooser");
-const auto requestInterface = QStringLiteral("org.freedesktop.portal.Request");
+namespace {
 
 // (us): 0 is a glob pattern, 1 a MIME type.
 struct FilterRule {
@@ -72,7 +72,9 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, Filter &filter)
     return argument;
 }
 
-void registerFilterTypes()
+} // namespace
+
+static void registerFilterTypes()
 {
     static bool registered = false;
     if (registered)
@@ -85,7 +87,7 @@ void registerFilterTypes()
 }
 
 // "Images (*.png *.jpg)" -> name "Images", rules for each glob.
-Filter filterFromNameFilter(const QString &nameFilter)
+static Filter filterFromNameFilter(const QString &nameFilter)
 {
     Filter filter;
     const int bracket = nameFilter.lastIndexOf('(');
@@ -98,7 +100,7 @@ Filter filterFromNameFilter(const QString &nameFilter)
     return filter;
 }
 
-Filter filterFromMimeType(const QString &mimeType)
+static Filter filterFromMimeType(const QString &mimeType)
 {
     Filter filter;
     const auto type = QMimeDatabase().mimeTypeForName(mimeType);
@@ -108,7 +110,7 @@ Filter filterFromMimeType(const QString &mimeType)
 }
 
 // The portal echoes the display name; Qt callers expect back one of the strings they set.
-QString qtNameFilter(const Filter &filter, const QFileDialogOptions &options)
+static QString qtNameFilter(const Filter &filter, const QFileDialogOptions &options)
 {
     // With hidden details QFileDialog::selectedMimeTypeFilter() compares the bare name.
     if (options.testOption(QFileDialogOptions::HideNameFilterDetails))
@@ -121,15 +123,13 @@ QString qtNameFilter(const Filter &filter, const QFileDialogOptions &options)
 }
 
 // The portal wants NUL-terminated paths as byte arrays.
-QByteArray portalPathValue(const QUrl &url)
+static QByteArray portalPathValue(const QUrl &url)
 {
     QByteArray path = QFile::encodeName(url.toLocalFile());
     if (!path.isEmpty())
         path.append('\0');
     return path;
 }
-
-} // namespace
 
 FileDialogHelper::FileDialogHelper()
 {

@@ -57,7 +57,9 @@ using CairoSurfacePtr = std::unique_ptr<cairo_surface_t, CairoSurfaceDeleter>;
 using GErrorPtr = std::unique_ptr<GError, GErrorDeleter>;
 using RsvgHandlePtr = std::unique_ptr<RsvgHandle, RsvgHandleDeleter>;
 
-RsvgHandlePtr createHandle(const QByteArray &data)
+} // namespace
+
+static RsvgHandlePtr createHandle(const QByteArray &data)
 {
     GError *rawError = nullptr;
     RsvgHandlePtr handle(rsvg_handle_new_from_data(
@@ -68,7 +70,7 @@ RsvgHandlePtr createHandle(const QByteArray &data)
     return handle;
 }
 
-QByteArray readDocument(QIODevice *device)
+static QByteArray readDocument(QIODevice *device)
 {
     const qint64 position = device->pos();
     QByteArray data = device->readAll();
@@ -79,7 +81,7 @@ QByteArray readDocument(QIODevice *device)
     return data;
 }
 
-int toPixelDimension(gdouble dimension)
+static int toPixelDimension(gdouble dimension)
 {
     if (!std::isfinite(dimension) || dimension <= 0.0
         || dimension > static_cast<gdouble>(std::numeric_limits<int>::max())) {
@@ -88,8 +90,6 @@ int toPixelDimension(gdouble dimension)
 
     return static_cast<int>(std::ceil(dimension));
 }
-
-} // namespace
 
 RsvgImageIOHandler::~RsvgImageIOHandler()
 {

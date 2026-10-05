@@ -14,10 +14,8 @@
 
 #include <cstring>
 
-namespace {
-
-void registryGlobal(void *data, wl_registry *registry, uint32_t name, const char *interface,
-                    uint32_t)
+static void registryGlobal(void *data, wl_registry *registry, uint32_t name, const char *interface,
+                           uint32_t)
 {
     auto *exporter = static_cast<zxdg_exporter_v2 **>(data);
     if (std::strcmp(interface, zxdg_exporter_v2_interface.name) == 0) {
@@ -26,12 +24,12 @@ void registryGlobal(void *data, wl_registry *registry, uint32_t name, const char
     }
 }
 
-wl_display *boundDisplay = nullptr;
-zxdg_exporter_v2 *boundExporter = nullptr;
+static wl_display *boundDisplay = nullptr;
+static zxdg_exporter_v2 *boundExporter = nullptr;
 
 // Post routines run in ~QGuiApplication while the display is still connected. A
 // later QGuiApplication can get the freed display's address back, so reset here.
-void releaseSharedExporter()
+static void releaseSharedExporter()
 {
     if (boundExporter)
         zxdg_exporter_v2_destroy(boundExporter);
@@ -41,7 +39,7 @@ void releaseSharedExporter()
 
 // wl_registry has no destructor request, so the compositor keeps every registry
 // until the client disconnects: bind the exporter once per connection and keep it.
-zxdg_exporter_v2 *sharedExporter(wl_display *display)
+static zxdg_exporter_v2 *sharedExporter(wl_display *display)
 {
     if (display == boundDisplay)
         return boundExporter;
@@ -71,8 +69,6 @@ zxdg_exporter_v2 *sharedExporter(wl_display *display)
     wl_event_queue_destroy(queue);
     return boundExporter;
 }
-
-} // namespace
 
 QString WaylandExport::exportWindow(QWindow *window)
 {
