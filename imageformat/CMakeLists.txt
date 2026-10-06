@@ -34,3 +34,7 @@ execute_process(COMMAND "${QT_PATHS_EXECUTABLE}" -query QT_INSTALL_PLUGINS
     OUTPUT_VARIABLE CMAKE_INSTALL_QTPLUGINDIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 install(TARGETS ${TARGET} DESTINATION ${CMAKE_INSTALL_QTPLUGINDIR}/imageformats/)
+
+# HEIF/HEIC/AVIF and JPEG XL, each built when its library is there.
+add_subdirectory(heif)
+add_subdirectory(jxl)
