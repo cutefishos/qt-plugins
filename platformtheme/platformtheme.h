@@ -9,7 +9,6 @@
 #include <private/qgenericunixthemes_p.h>
 #endif
 #include "hintsettings.h"
-#include "systemtrayicon.h"
 
 class PlatformTheme : public QObject, public QGenericUnixTheme
 {
@@ -26,17 +25,6 @@ public:
 
     bool usePlatformNativeDialog(DialogType type) const override;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;
-
-    QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override
-    {
-        auto trayIcon = new SystemTrayIcon;
-        if (trayIcon->isSystemTrayAvailable())
-            return trayIcon;
-        else {
-            delete trayIcon;
-            return nullptr;
-        }
-    }
 
 private:
     void onFontChanged();

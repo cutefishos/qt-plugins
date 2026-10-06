@@ -23,20 +23,8 @@ set (SRCS
     filedialoghelper.cpp
     hintsettings.h
     hintsettings.cpp
-    systemtrayicon.h
-    systemtrayicon.cpp
     touchpadscrolling.h
     touchpadscrolling.cpp
-    statusnotifier/dbustypes.h
-    statusnotifier/dbustypes.cpp
-    statusnotifier/statusnotifieritem.h
-    statusnotifier/statusnotifieritem.cpp
-)
-
-qt6_add_dbus_adaptor(SRCS
-    statusnotifier/org.kde.StatusNotifierItem.xml
-    statusnotifier/statusnotifieritem.h
-    StatusNotifierItem
 )
 
 # xdg-foreign lets the portal's file dialog parent itself onto the application
