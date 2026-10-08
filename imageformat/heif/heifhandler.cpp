@@ -93,10 +93,15 @@ bool HeifHandler::read(QImage *image)
     }
 
     // Asked for less, averaged straight from the decoder's plane: no copy at full size.
-    QImage result = m_scaledSize.isValid() && m_scaledSize.width() < width && m_scaledSize.height() < height
-            ? shrink(pixels, width, height, stride, alpha, m_scaledSize)
-            : QImage(pixels, width, height, stride, alpha ? QImage::Format_RGBA8888 : QImage::Format_RGB888)
-                      .convertToFormat(alpha ? QImage::Format_RGBA8888 : QImage::Format_RGB32);
+    QImage result;
+    if (m_scaledSize.isValid() && m_scaledSize.width() < width && m_scaledSize.height() < height) {
+        result = shrink(pixels, width, height, stride, alpha, m_scaledSize);
+    } else {
+        // Converting to the same format only wraps the decoder's plane, which is released below.
+        const QImage wrapped(pixels, width, height, stride,
+                             alpha ? QImage::Format_RGBA8888 : QImage::Format_RGB888);
+        result = alpha ? wrapped.copy() : wrapped.convertToFormat(QImage::Format_RGB32);
+    }
     heif_image_release(decoded);
     if (result.isNull())
         return false;
