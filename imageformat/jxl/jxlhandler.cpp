@@ -76,7 +76,9 @@ bool JxlHandler::read(QImage *image)
     if (!decoder || !runner
             || JxlDecoderSubscribeEvents(decoder.get(), JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING
                                                         | JXL_DEC_FULL_IMAGE) != JXL_DEC_SUCCESS
-            || JxlDecoderSetParallelRunner(decoder.get(), JxlResizableParallelRunner, runner.get()) != JXL_DEC_SUCCESS)
+            || JxlDecoderSetParallelRunner(decoder.get(), JxlResizableParallelRunner, runner.get()) != JXL_DEC_SUCCESS
+            // Premultiplied files come out straight too, as Format_RGBA8888 says.
+            || JxlDecoderSetUnpremultiplyAlpha(decoder.get(), JXL_TRUE) != JXL_DEC_SUCCESS)
         return false;
     JxlDecoderSetInput(decoder.get(), reinterpret_cast<const uint8_t *>(m_data.constData()), size_t(m_data.size()));
     JxlDecoderCloseInput(decoder.get());
