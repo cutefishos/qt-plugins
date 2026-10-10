@@ -159,9 +159,9 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
     const bool directoryMode = dialogOptions->fileMode() == QFileDialogOptions::Directory
             || dialogOptions->fileMode() == QFileDialogOptions::DirectoryOnly;
 
+    const QString token = QStringLiteral("cutefish%1").arg(QRandomGenerator::global()->generate());
     QVariantMap portalOptions;
-    portalOptions.insert(QStringLiteral("handle_token"),
-                         QStringLiteral("cutefish%1").arg(QRandomGenerator::global()->generate()));
+    portalOptions.insert(QStringLiteral("handle_token"), token);
     portalOptions.insert(QStringLiteral("modal"), modality != Qt::NonModal);
     portalOptions.insert(QStringLiteral("multiple"),
                          dialogOptions->fileMode() == QFileDialogOptions::ExistingFiles);
@@ -234,6 +234,16 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
             saveMode ? QStringLiteral("SaveFile") : QStringLiteral("OpenFile"));
     message << parentWindow << title << portalOptions;
 
+    // The request path follows from the token, so Response is listened for before the
+    // call: a backend that answers at once must not be missed.
+    const QString sender = QDBusConnection::sessionBus().baseService().mid(1).replace(QLatin1Char('.'),
+                                                                                     QLatin1Char('_'));
+    m_request = QDBusObjectPath(
+            QStringLiteral("/org/freedesktop/portal/desktop/request/%1/%2").arg(sender, token));
+    QDBusConnection::sessionBus().connect(portalService, m_request.path(), requestInterface,
+                                          QStringLiteral("Response"), this,
+                                          SLOT(gotResponse(uint, QVariantMap, QDBusMessage)));
+
     auto *watcher =
             new QDBusPendingCallWatcher(QDBusConnection::sessionBus().asyncCall(message), this);
     connect(watcher, &QDBusPendingCallWatcher::finished, this,
@@ -251,15 +261,24 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
                     return;
                 }
                 if (reply.isError()) {
+                    disconnectResponse(m_request.path());
+                    m_request = QDBusObjectPath();
                     Q_EMIT reject();
                     m_loop.quit();
                     return;
                 }
-                m_request = reply.value();
-                QDBusConnection::sessionBus().connect(
-                        portalService, m_request.path(), requestInterface,
-                        QStringLiteral("Response"), this,
-                        SLOT(gotResponse(uint, QVariantMap, QDBusMessage)));
+                // Already answered through the expected path.
+                if (m_request.path().isEmpty())
+                    return;
+                // An older portal ignores the token and picks the path itself.
+                if (reply.value() != m_request) {
+                    disconnectResponse(m_request.path());
+                    m_request = reply.value();
+                    QDBusConnection::sessionBus().connect(
+                            portalService, m_request.path(), requestInterface,
+                            QStringLiteral("Response"), this,
+                            SLOT(gotResponse(uint, QVariantMap, QDBusMessage)));
+                }
             });
     return true;
 }
