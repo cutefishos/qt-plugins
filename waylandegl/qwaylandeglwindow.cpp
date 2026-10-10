@@ -62,6 +62,13 @@ void QWaylandEglWindow::ensureSize()
 
     if (m_lastScale != scale()) {
         m_lastScale = scale();
+        // QWaylandWindow::setScale() has just sent set_buffer_scale(ceil(scale)); take it
+        // back before an out-of-band commit can apply it. The render thread repeats it.
+        {
+            QReadLocker surfaceLock(&mSurfaceLock);
+            if (mSurface && mSurface->version() >= 3)
+                mSurface->set_buffer_scale(1);
+        }
         m_resetBufferScale = true;
     }
 
