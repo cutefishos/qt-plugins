@@ -35,7 +35,7 @@ bool TouchpadScrolling::eventFilter(QObject *watched, QEvent *event)
 
 void TouchpadScrolling::loadQuickScrolling()
 {
-    QLibrary library(QStringLiteral("cutefish-framework-scrolling-quick"));
+    QLibrary library(QStringLiteral("cutefish-qt-scrolling-quick"));
     if (auto setAutomatic = reinterpret_cast<void (*)()>(
                 library.resolve("cutefish_scrolling_quick_set_automatic")))
         setAutomatic();

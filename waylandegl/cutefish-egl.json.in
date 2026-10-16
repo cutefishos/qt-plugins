@@ -1,5 +1,0 @@
-{
-    "Keys": [ "cutefish-egl" ],
-    "QtGuiVersion": "@Qt6Gui_VERSION@",
-    "QtWaylandClientVersion": "@Qt6WaylandClient_VERSION@"
-}

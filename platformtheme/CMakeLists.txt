@@ -11,7 +11,6 @@ if(NOT TARGET Qt6::GuiPrivate)
     find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
 endif()
 find_package(PkgConfig REQUIRED)
-find_package(CutefishFramework REQUIRED COMPONENTS Scrolling ScrollingWidgets)
 
 set (SRCS
     main.cpp
