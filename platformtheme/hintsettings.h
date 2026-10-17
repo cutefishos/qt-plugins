@@ -49,6 +49,7 @@ private:
     QSettings *m_settings;
     QString m_settingsFile;
     QFileSystemWatcher *m_fileWatcher;
+    QVariantMap m_values;
 
     QString m_iconTheme;
 };

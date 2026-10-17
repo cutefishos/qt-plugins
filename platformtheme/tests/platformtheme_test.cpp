@@ -2,15 +2,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "filedialoghelper.h"
+#include "hintsettings.h"
 
 #include <QDBusArgument>
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QDBusMetaType>
 #include <QDBusObjectPath>
+#include <QDir>
+#include <QFile>
 #include <QGuiApplication>
 #include <QMimeDatabase>
 #include <QSignalSpy>
+#include <QStandardPaths>
 #include <QTest>
 
 struct PortalRule {
@@ -118,14 +122,25 @@ private Q_SLOTS:
     void initTestCase();
     void multipleSelectionSelectsNoSingleFile();
     void defaultMimeTypeIsAllFiles();
+    void settingsChangeSurvivesAnEarlierSync();
 
 private:
     QDBusConnection m_portalBus = QDBusConnection(QString());
     FakeFileChooser *m_portal = nullptr;
 };
 
+static bool writeSettings(const QByteArray &contents)
+{
+    const QString directory =
+            QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/cutefish";
+    QFile file(directory + "/services.conf");
+    return QDir().mkpath(directory) && file.open(QIODevice::WriteOnly | QIODevice::Truncate)
+        && file.write(contents) == contents.size();
+}
+
 void PlatformThemeTest::initTestCase()
 {
+    QStandardPaths::setTestModeEnabled(true);
     qDBusRegisterMetaType<PortalRule>();
     qDBusRegisterMetaType<QList<PortalRule>>();
     qDBusRegisterMetaType<PortalFilter>();
@@ -205,6 +220,21 @@ void PlatformThemeTest::defaultMimeTypeIsAllFiles()
     QCOMPARE(current.name, QStringLiteral("All files"));
     // QFileDialog::selectedMimeTypeFilter() finds the type by this name filter.
     QCOMPARE(helper.selectedNameFilter(), allFilter);
+}
+
+void PlatformThemeTest::settingsChangeSurvivesAnEarlierSync()
+{
+    QVERIFY(writeSettings("[Appearance]\nDarkMode=false\nIconTheme=A\n"));
+    HintsSettings hints;
+    QCoreApplication::processEvents();
+    QSignalSpy darkMode(&hints, &HintsSettings::darkModeChanged);
+
+    QVERIFY(writeSettings("[Appearance]\nDarkMode=true\nIconTheme=Second\n"));
+    // The icon theme signal can come before the file watcher sees the write.
+    hints.updateIconTheme();
+    QVERIFY(darkMode.wait(2000));
+    QCOMPARE(darkMode.constFirst().constFirst().toBool(), true);
+    QCOMPARE(hints.darkMode(), true);
 }
 
 QTEST_MAIN(PlatformThemeTest)

@@ -3,6 +3,7 @@ find_package(Qt6 REQUIRED COMPONENTS Test)
 add_executable(platformtheme-test
     platformtheme_test.cpp
     ../filedialoghelper.cpp
+    ../hintsettings.cpp
     ../waylandexport.cpp
 )
 target_include_directories(platformtheme-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)

@@ -10,6 +10,8 @@
 #include <QDBusConnection>
 #include <QFontDatabase>
 
+#include <utility>
+
 static const QByteArray s_systemFontName = QByteArrayLiteral("Font");
 static const QByteArray s_systemFixedFontName = QByteArrayLiteral("FixedFont");
 static const QByteArray s_systemPointFontSize = QByteArrayLiteral("FontSize");
@@ -28,6 +30,14 @@ static QString availableFontFamily(const QString &requested, const QString &fall
     return QStringLiteral("Sans Serif");
 }
 
+static QVariantMap settingsValues(QSettings *settings)
+{
+    QVariantMap values;
+    for (const QString &key : settings->allKeys())
+        values.insert(key, settings->value(key));
+    return values;
+}
+
 HintsSettings::HintsSettings(QObject *parent)
     : QObject(parent)
     , m_settings(new QSettings(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation)
@@ -35,6 +45,7 @@ HintsSettings::HintsSettings(QObject *parent)
                                QSettings::IniFormat, this))
 {
     m_settings->beginGroup("Appearance");
+    m_values = settingsValues(m_settings);
     m_iconTheme = m_settings->value("IconTheme", s_defaultIconName).toString();
     updateIconThemeHint();
 
@@ -123,16 +134,14 @@ void HintsSettings::onFileChanged(const QString &path)
 {
     Q_UNUSED(path);
 
-    QVariantMap map;
-    for (const QString &value : m_settings->allKeys()) {
-        map[value] = m_settings->value(value);
-    }
-
+    // The appearance signals sync the settings too, so the values before this
+    // change are the ones seen here last, not what the settings hold now.
     m_settings->sync();
+    const QVariantMap map = std::exchange(m_values, settingsValues(m_settings));
 
-    for (const QString &value : m_settings->allKeys()) {
+    for (const QString &value : m_values.keys()) {
         const QVariant &oldValue = map.value(value);
-        const QVariant &newValue = m_settings->value(value);
+        const QVariant &newValue = m_values.value(value);
 
         if (oldValue != newValue) {
             if (value == s_systemFontName)
