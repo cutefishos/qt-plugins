@@ -82,3 +82,7 @@ else()
 endif()
 
 install(TARGETS cutefishplatformtheme LIBRARY DESTINATION "${QT_PLUGINS_DIR}/platformthemes")
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

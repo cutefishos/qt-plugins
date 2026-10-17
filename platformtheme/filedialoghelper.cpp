@@ -328,9 +328,6 @@ void FileDialogHelper::gotResponse(uint response, const QVariantMap &results,
             m_directory = m_selectedFile.adjusted(QUrl::RemoveFilename);
             Q_EMIT directoryEntered(m_directory);
             Q_EMIT currentChanged(m_selectedFile);
-            // QFileDialog::accept() emits the selection signals; fileSelected only for one file.
-            if (m_selectedFiles.size() > 1)
-                Q_EMIT fileSelected(m_selectedFile);
         }
         const auto filter = qdbus_cast<Filter>(results.value(QStringLiteral("current_filter")));
         if (!filter.name.isEmpty()) {
