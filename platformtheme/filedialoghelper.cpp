@@ -1,5 +1,6 @@
 #include "filedialoghelper.h"
 
+#include <QCoreApplication>
 #include <QDBusArgument>
 #include <QDBusConnection>
 #include <QDBusMessage>
@@ -102,8 +103,12 @@ static Filter filterFromNameFilter(const QString &nameFilter)
 
 static Filter filterFromMimeType(const QString &mimeType)
 {
-    Filter filter;
     const auto type = QMimeDatabase().mimeTypeForName(mimeType);
+    // QFileDialog::setMimeTypeFilters() names the default type this way.
+    if (type.isDefault())
+        return filterFromNameFilter(QCoreApplication::translate("QFileDialog", "All files (*)"));
+
+    Filter filter;
     filter.name = type.isValid() && !type.comment().isEmpty() ? type.comment() : mimeType;
     filter.rules.append({1, mimeType});
     return filter;
@@ -175,7 +180,6 @@ bool FileDialogHelper::show(Qt::WindowFlags flags, Qt::WindowModality modality, 
     for (const QString &mimeType : dialogOptions->mimeTypeFilters())
         filters.append(filterFromMimeType(mimeType));
     // QFileDialog::setMimeTypeFilters() also sets each type's name filter; send it once.
-    // The default type's "All files (*)" is not named after its MIME comment and stays.
     const qsizetype mimeFilterCount = filters.size();
     for (const QString &nameFilter : dialogOptions->nameFilters()) {
         const Filter filter = filterFromNameFilter(nameFilter);

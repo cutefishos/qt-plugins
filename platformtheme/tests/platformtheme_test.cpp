@@ -9,6 +9,7 @@
 #include <QDBusMetaType>
 #include <QDBusObjectPath>
 #include <QGuiApplication>
+#include <QMimeDatabase>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -116,6 +117,7 @@ class PlatformThemeTest : public QObject
 private Q_SLOTS:
     void initTestCase();
     void multipleSelectionSelectsNoSingleFile();
+    void defaultMimeTypeIsAllFiles();
 
 private:
     QDBusConnection m_portalBus = QDBusConnection(QString());
@@ -160,6 +162,49 @@ void PlatformThemeTest::multipleSelectionSelectsNoSingleFile()
     QCOMPARE(helper.selectedFiles().size(), 2);
     // QFileDialog emits fileSelected itself, and only for a single file.
     QCOMPARE(fileSelected.count(), 0);
+}
+
+void PlatformThemeTest::defaultMimeTypeIsAllFiles()
+{
+    const QString png = QStringLiteral("image/png");
+    const QString other = QStringLiteral("application/octet-stream");
+    const QMimeType pngType = QMimeDatabase().mimeTypeForName(png);
+    const QString pngFilter =
+            pngType.comment() + QStringLiteral(" (") + pngType.globPatterns().join(QLatin1Char(' ')) + QLatin1Char(')');
+    const QString allFilter = QStringLiteral("All files (*)");
+
+    FileDialogHelper helper;
+    auto options = QFileDialogOptions::create();
+    options->setFileMode(QFileDialogOptions::ExistingFile);
+    // As QFileDialog::setMimeTypeFilters() and selectMimeTypeFilter() leave them.
+    options->setMimeTypeFilters({png, other});
+    options->setNameFilters({pngFilter, allFilter});
+    options->setInitiallySelectedMimeTypeFilter(other);
+    options->setInitiallySelectedNameFilter(allFilter);
+    helper.setOptions(options);
+
+    m_portal->response = 0;
+    m_portal->results = {
+        {QStringLiteral("uris"), QStringList {QStringLiteral("file:///tmp/a.bin")}},
+        {QStringLiteral("current_filter"),
+         QVariant::fromValue(PortalFilter {QStringLiteral("All files"), {{0, QStringLiteral("*")}}})},
+    };
+    QSignalSpy accepted(&helper, &QPlatformDialogHelper::accept);
+    QVERIFY(helper.show(Qt::Dialog, Qt::ApplicationModal, nullptr));
+    QVERIFY(accepted.wait());
+
+    const auto filters =
+            qdbus_cast<QList<PortalFilter>>(m_portal->options.value(QStringLiteral("filters")));
+    QCOMPARE(filters.size(), 2);
+    QCOMPARE(filters.at(0).name, pngType.comment());
+    QCOMPARE(filters.at(1).name, QStringLiteral("All files"));
+    QCOMPARE(filters.at(1).rules.size(), 1);
+    QCOMPARE(filters.at(1).rules.at(0).value, QStringLiteral("*"));
+    const auto current =
+            qdbus_cast<PortalFilter>(m_portal->options.value(QStringLiteral("current_filter")));
+    QCOMPARE(current.name, QStringLiteral("All files"));
+    // QFileDialog::selectedMimeTypeFilter() finds the type by this name filter.
+    QCOMPARE(helper.selectedNameFilter(), allFilter);
 }
 
 QTEST_MAIN(PlatformThemeTest)
