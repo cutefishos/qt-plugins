@@ -59,14 +59,14 @@ HintsSettings::HintsSettings(QObject *parent)
     updateCursorHints();
     for (const auto *signal : {"cursorThemeChanged", "cursorSizeChanged"})
         QDBusConnection::sessionBus().connect(
-                "com.cutefish.Services", "/com/cutefish/Services/Appearance",
-                "com.cutefish.Services.Appearance", QLatin1String(signal), this,
+                "org.cutefish.Services", "/org/cutefish/Services/Appearance",
+                "org.cutefish.Services.Appearance", QLatin1String(signal), this,
                 SLOT(updateCursorHints()));
     // Delivered in order before any application-side icon reload that listens to the same
     // signal, so QIconLoader is on the new theme first whatever the file watcher does.
-    QDBusConnection::sessionBus().connect("com.cutefish.Services",
-                                          "/com/cutefish/Services/Appearance",
-                                          "com.cutefish.Services.Appearance", "iconThemeChanged",
+    QDBusConnection::sessionBus().connect("org.cutefish.Services",
+                                          "/org/cutefish/Services/Appearance",
+                                          "org.cutefish.Services.Appearance", "iconThemeChanged",
                                           this, SLOT(updateIconTheme()));
 
     QMetaObject::invokeMethod(this, "lazyInit", Qt::QueuedConnection);
