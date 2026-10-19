@@ -20,4 +20,4 @@ sudo make install
 
 ## License
 
-cutefish-qt-plugins is licensed under GPLv3.
+BSD-3-Clause; see [LICENSE](LICENSE).

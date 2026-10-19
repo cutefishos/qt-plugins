@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2026 Reion Wong <reionwong@gmail.com>
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: BSD-3-Clause
 
 pkg_check_modules(LIBJXL IMPORTED_TARGET libjxl libjxl_threads)
 if(NOT LIBJXL_FOUND)
