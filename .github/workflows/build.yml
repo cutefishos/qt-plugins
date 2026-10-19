@@ -1,0 +1,13 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: cutefishos/.github/.github/workflows/build.yml@main
+    with:
+      packages: qt6-base-dev qt6-base-private-dev qt6-declarative-dev qt6-declarative-private-dev librsvg2-dev
