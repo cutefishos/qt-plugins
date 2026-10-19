@@ -1,8 +1,10 @@
 # Qt Plugins
 
-Qt plugins that fit Qt applications into the Cutefish session: the `cutefish`
-platform theme with the session's touchpad scrolling and image format plugins
-(SVG, HEIF/HEIC/AVIF, JPEG XL).
+Qt plugins that make Qt applications at home in the Cutefish session. The
+`cutefish` platform theme makes them follow the system's dark mode, fonts,
+icon and cursor themes, open the Cutefish file chooser, and scroll with the
+same touchpad feel as Cutefish's own apps. The image format plugins add SVG,
+HEIF/HEIC/AVIF and JPEG XL.
 
 ## Dependencies
 
