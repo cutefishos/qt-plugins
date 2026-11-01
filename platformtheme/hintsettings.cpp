@@ -104,7 +104,7 @@ QStringList HintsSettings::xdgIconThemePaths() const
 
 QString HintsSettings::systemFont() const
 {
-    return availableFontFamily(m_settings->value(s_systemFontName, "Noto Sans").toString(),
+    return availableFontFamily(m_settings->value(s_systemFontName, "Inter").toString(),
                                QStringLiteral("DejaVu Sans"));
 }
 
