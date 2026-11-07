@@ -56,9 +56,14 @@ PlatformTheme::PlatformTheme()
             &PlatformTheme::onFontChanged);
     connect(m_hints, &HintsSettings::iconThemeChanged, this, &PlatformTheme::onIconThemeChanged);
     connect(m_hints, &HintsSettings::cursorThemeChanged, this, [] {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
+        // Qt 6.10 dropped the per-window overload; the theme change is global.
+        QWindowSystemInterface::handleThemeChange();
+#else
         for (auto *window : qGuiApp->allWindows()) {
             QWindowSystemInterface::handleThemeChange(window);
         }
+#endif
     });
     connect(m_hints, &HintsSettings::darkModeChanged, this, [] {
         QWindowSystemInterface::handleThemeChange();
